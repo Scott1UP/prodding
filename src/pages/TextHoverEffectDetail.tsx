@@ -25,11 +25,13 @@ function distributeOffsets(count: number): string[] {
 
 export default function TextHoverEffectDetail() {
   const navigate = useNavigate()
-  const [text, setText] = useState('HOVER')
+  const [text, setText] = useState('Devcon')
   const [letterSpacing, setLetterSpacing] = useState(0)
   const [fontSize, setFontSize] = useState(4.5)
+  const [maskRadius, setMaskRadius] = useState(20)
   const [gradientStops, setGradientStops] = useState<GradientStop[]>(defaultStops)
   const [strokeColor, setStrokeColor] = useState('#d4d4d4')
+  const [bgColor, setBgColor] = useState('#ffffff')
   const [stopsExpanded, setStopsExpanded] = useState(false)
   const gradientRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -166,6 +168,30 @@ export default function TextHoverEffectDetail() {
 
         <div className="w-px h-6 bg-border shrink-0" />
 
+        {/* Background */}
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <span className="text-base text-text-secondary font-light shrink-0">Background</span>
+          <label className="relative cursor-pointer shrink-0">
+            <input
+              type="color"
+              value={bgColor}
+              onChange={(e) => setBgColor(e.target.value)}
+              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+            />
+            <span
+              className="block w-8 h-8 rounded-lg border border-border"
+              style={{ backgroundColor: bgColor }}
+            />
+          </label>
+          <Input
+            value={bgColor}
+            onChange={(e) => setBgColor(e.target.value)}
+            className="text-base h-8 font-mono min-w-0"
+          />
+        </div>
+
+        <div className="w-px h-6 bg-border shrink-0" />
+
         {/* Gradient */}
         <div className="flex items-center gap-2 flex-1 min-w-0 relative">
           <span className="text-base text-text-secondary font-light shrink-0">Gradient</span>
@@ -231,7 +257,7 @@ export default function TextHoverEffectDetail() {
       </div>
 
       {/* Component preview */}
-      <div className="w-full rounded-xl border border-border bg-white overflow-hidden">
+      <div className="w-full rounded-xl border border-border overflow-hidden" style={{ backgroundColor: bgColor }}>
         <div className="w-full h-[480px]">
           <TextHoverEffect
             text={text}
@@ -241,8 +267,23 @@ export default function TextHoverEffectDetail() {
             fontWeight="normal"
             letterSpacing={letterSpacing}
             fontSize={`${fontSize}rem`}
+            maskRadius={maskRadius}
           />
         </div>
+      </div>
+
+      {/* Radius slider */}
+      <div className="flex items-center gap-3 max-w-xs">
+        <Label className="text-base text-text-secondary font-light shrink-0">
+          Radius
+        </Label>
+        <Slider
+          value={[maskRadius]}
+          onValueChange={([v]) => setMaskRadius(v)}
+          min={5}
+          max={50}
+          step={1}
+        />
       </div>
     </div>
   )

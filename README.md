@@ -1,73 +1,41 @@
-# React + TypeScript + Vite
+# Component Playground
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A designer's sandbox for exploring and customizing React-based UI components. Built for hands-on experimentation with interactive controls, live previews, and real-time parameter tweaking.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **React 19** + TypeScript
+- **Vite** with HMR
+- **Tailwind CSS v4** with CSS Cascade Layers
+- **shadcn/ui** components (New York style)
+- **Aceternity UI** registry components
+- **React Router v6** for navigation
 
-## React Compiler
+## Pages
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Text Effects
+A curated collection of typographic animations and kinetic text experiments. Each effect has a preview card on the index page and a dedicated detail page with interactive controls.
 
-## Expanding the ESLint configuration
+**Text Hover Effect** — An SVG text effect that reveals a gradient stroke as you move your cursor. The radial mask follows your mouse position, creating a spotlight reveal. Controls include:
+- Text input and font size
+- Letter spacing (tracking)
+- Stroke color with color picker
+- Custom gradient builder with add/remove color stops
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Backgrounds
+Gradients, patterns, meshes, and atmospheric backdrops. (Coming soon)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Design
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- Light theme with warm neutral palette
+- Poppins typeface, 16px minimum font size
+- Minimal, refined aesthetic — built as a product designer's tool
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Getting Started
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Opens at `http://localhost:5173`.

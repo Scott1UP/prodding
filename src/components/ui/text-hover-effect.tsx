@@ -24,6 +24,7 @@ export const TextHoverEffect = ({
   fontWeight = "bold",
   letterSpacing = 0,
   fontSize = "4.5rem",
+  maskRadius = 20,
 }: {
   text: string;
   duration?: number;
@@ -34,6 +35,7 @@ export const TextHoverEffect = ({
   fontWeight?: string;
   letterSpacing?: number;
   fontSize?: string;
+  maskRadius?: number;
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [cursor, setCursor] = useState({ x: 0, y: 0 });
@@ -89,7 +91,7 @@ export const TextHoverEffect = ({
         <motion.radialGradient
           id={maskId}
           gradientUnits="userSpaceOnUse"
-          r="20%"
+          r={`${maskRadius}%`}
           initial={{ cx: "50%", cy: "50%" }}
           animate={maskPosition}
           transition={{ duration: duration ?? 0, ease: "easeOut" }}
