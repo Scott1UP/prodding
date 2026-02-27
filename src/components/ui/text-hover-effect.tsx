@@ -1,5 +1,4 @@
 "use client";
-import React, { useRef, useEffect, useState, useId, useMemo } from "react";
 import { motion } from "motion/react";
 
 export type GradientStop = {
