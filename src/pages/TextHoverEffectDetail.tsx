@@ -125,7 +125,7 @@ export default function TextHoverEffectDetail() {
           Back
         </Button>
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-semibold text-text-primary tracking-tight">
+          <h1 className="text-3xl font-extrabold text-text-primary tracking-tight">
             Text Hover Effect
           </h1>
           <Button
