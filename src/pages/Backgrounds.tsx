@@ -4,7 +4,7 @@ export default function Backgrounds() {
   return (
     <div className="max-w-5xl space-y-10">
       <header>
-        <h1 className="text-3xl font-semibold text-text-primary tracking-tight">
+        <h1 className="text-3xl font-extrabold text-text-primary tracking-tight">
           Backgrounds
         </h1>
         <p className="mt-3 text-text-secondary text-base font-light leading-relaxed">
