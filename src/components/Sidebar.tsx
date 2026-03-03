@@ -14,18 +14,11 @@ export default function Sidebar() {
     <aside className="sticky top-0 h-screen w-[280px] shrink-0 border-r border-border bg-surface-raised flex flex-col">
       {/* Logo */}
       <div className="px-6 pt-8 pb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
-            <span className="text-base font-semibold">P</span>
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold text-text-primary leading-tight">
-              Playground
-            </h1>
-            <p className="text-base text-text-tertiary font-light mt-0.5">
-              Component Lab
-            </p>
-          </div>
+        <div className="flex flex-col gap-1">
+          <img src="/devcon-logo.svg" alt="Devcon" className="h-8 w-auto self-start" />
+          <p className="text-lg text-text-primary font-bold">
+            Component Lab
+          </p>
         </div>
       </div>
 
@@ -35,7 +28,7 @@ export default function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 px-4 pt-6 space-y-[4px]">
-        <p className="px-3 pb-2 text-base uppercase tracking-widest text-text-tertiary font-medium">
+        <p className="px-3 pb-2 text-sm uppercase tracking-widest text-text-tertiary font-semibold">
           Pages
         </p>
         {navItems.map(({ to, label, icon: Icon }) => (

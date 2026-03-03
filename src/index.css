@@ -41,6 +41,14 @@
   --radius-sm: 0.375rem;
 }
 
+@font-face {
+  font-family: "Chloe";
+  src: url("/fonts/Chloe-Regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   html {
     font-size: 16px;

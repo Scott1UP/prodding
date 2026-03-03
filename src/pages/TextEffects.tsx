@@ -16,14 +16,14 @@ export default function TextEffects() {
 
   return (
     <div className="max-w-5xl space-y-10">
-      <div>
-        <h1 className="text-3xl font-semibold text-text-primary tracking-tight">
+      <header>
+        <h1 className="text-3xl font-extrabold text-text-primary tracking-tight">
           Text Effects
         </h1>
         <p className="mt-3 text-text-secondary text-base font-light leading-relaxed">
           Typography animations, reveals, and kinetic text experiments.
         </p>
-      </div>
+      </header>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {effects.map((effect) => (

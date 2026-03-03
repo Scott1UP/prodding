@@ -11,24 +11,23 @@ const defaultGradientStops: GradientStop[] = [
   { offset: "0%", color: "#eab308" },
   { offset: "25%", color: "#ef4444" },
   { offset: "50%", color: "#3b82f6" },
-  { offset: "75%", color: "#06b6d4" },
+  { offset: "75%", color: "#07d5c7" },
   { offset: "100%", color: "#8b5cf6" },
 ];
 
 export const TextHoverEffect = ({
   text,
   duration,
-  strokeColor = "#d4d4d4",
+  strokeColor = "#e6e6e6",
   gradientStops = defaultGradientStops,
   fontFamily = "helvetica",
   fontWeight = "bold",
-  letterSpacing = 0,
+  letterSpacing = -0.03,
   fontSize = "4.5rem",
   maskRadius = 20,
 }: {
   text: string;
   duration?: number;
-  automatic?: boolean;
   strokeColor?: string;
   gradientStops?: GradientStop[];
   fontFamily?: string;

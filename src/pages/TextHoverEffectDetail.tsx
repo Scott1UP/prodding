@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TextHoverEffect } from '@/components/ui/text-hover-effect'
 import type { GradientStop } from '@/components/ui/text-hover-effect'
@@ -6,13 +6,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
-import { ArrowLeft, Plus, X } from 'lucide-react'
+import { ExportDialog } from '@/components/ExportDialog'
+import { ArrowLeft, Code, Plus, X } from 'lucide-react'
+import textHoverEffectSource from '@/components/ui/text-hover-effect.tsx?raw'
 
 const defaultStops: GradientStop[] = [
   { offset: '0%', color: '#eab308' },
   { offset: '25%', color: '#ef4444' },
   { offset: '50%', color: '#3b82f6' },
-  { offset: '75%', color: '#06b6d4' },
+  { offset: '75%', color: '#07d5c7' },
   { offset: '100%', color: '#8b5cf6' },
 ]
 
@@ -26,15 +28,52 @@ function distributeOffsets(count: number): string[] {
 export default function TextHoverEffectDetail() {
   const navigate = useNavigate()
   const [text, setText] = useState('Devcon')
-  const [letterSpacing, setLetterSpacing] = useState(0)
   const [fontSize, setFontSize] = useState(4.5)
   const [maskRadius, setMaskRadius] = useState(20)
   const [gradientStops, setGradientStops] = useState<GradientStop[]>(defaultStops)
-  const [strokeColor, setStrokeColor] = useState('#d4d4d4')
+  const [strokeColor, setStrokeColor] = useState('#e6e6e6')
   const [bgColor, setBgColor] = useState('#ffffff')
   const [stopsExpanded, setStopsExpanded] = useState(false)
+  const [exportOpen, setExportOpen] = useState(false)
   const gradientRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const transformedSource = useMemo(() => {
+    let source = textHoverEffectSource
+
+    // Replace default prop values with current settings
+    source = source.replace(
+      'strokeColor = "#e6e6e6"',
+      `strokeColor = "${strokeColor}"`
+    )
+    source = source.replace(
+      'fontFamily = "helvetica"',
+      `fontFamily = "Chloe, serif"`
+    )
+    source = source.replace(
+      'fontWeight = "bold"',
+      `fontWeight = "normal"`
+    )
+    source = source.replace(
+      'fontSize = "4.5rem"',
+      `fontSize = "${fontSize}rem"`
+    )
+    source = source.replace(
+      'maskRadius = 20',
+      `maskRadius = ${maskRadius}`
+    )
+
+    // Replace the defaultGradientStops array
+    const stopsArrayStr = gradientStops
+      .map(s => `  { offset: "${s.offset}", color: "${s.color}" }`)
+      .join(',\n')
+    source = source.replace(
+      /const defaultGradientStops: GradientStop\[\] = \[[\s\S]*?\];/,
+      `const defaultGradientStops: GradientStop[] = [\n${stopsArrayStr},\n];`
+    )
+
+    return source
+  }, [strokeColor, fontSize, maskRadius, gradientStops])
 
   const updateStopColor = useCallback((index: number, color: string) => {
     setGradientStops(prev => prev.map((stop, i) => i === index ? { ...stop, color } : stop))
@@ -75,7 +114,7 @@ export default function TextHoverEffectDetail() {
   return (
     <div className="space-y-6">
       {/* Back + Title */}
-      <div>
+      <header>
         <Button
           variant="ghost"
           size="sm"
@@ -85,14 +124,25 @@ export default function TextHoverEffectDetail() {
           <ArrowLeft size={16} strokeWidth={1.5} />
           Back
         </Button>
-        <h1 className="text-3xl font-semibold text-text-primary tracking-tight">
-          Text Hover Effect
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-semibold text-text-primary tracking-tight">
+            Text Hover Effect
+          </h1>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 text-base"
+            onClick={() => setExportOpen(true)}
+          >
+            <Code size={16} strokeWidth={1.5} />
+            Export
+          </Button>
+        </div>
         <p className="mt-3 text-text-secondary text-base font-light leading-relaxed max-w-2xl">
           An SVG text effect that reveals a gradient stroke as you move your cursor.
           The radial mask follows your mouse position, creating a spotlight reveal over the text.
         </p>
-      </div>
+      </header>
 
       {/* Controls row */}
       <div className="flex items-center gap-4">
@@ -123,22 +173,6 @@ export default function TextHoverEffectDetail() {
             min={2}
             max={8}
             step={0.25}
-          />
-        </div>
-
-        <div className="w-px h-6 bg-border shrink-0" />
-
-        {/* Tracking */}
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <Label className="text-base text-text-secondary font-light shrink-0">
-            Tracking
-          </Label>
-          <Slider
-            value={[letterSpacing]}
-            onValueChange={([v]) => setLetterSpacing(v)}
-            min={-0.1}
-            max={0.5}
-            step={0.01}
           />
         </div>
 
@@ -265,7 +299,7 @@ export default function TextHoverEffectDetail() {
             gradientStops={gradientStops}
             fontFamily="Chloe, serif"
             fontWeight="normal"
-            letterSpacing={letterSpacing}
+            letterSpacing={-0.03}
             fontSize={`${fontSize}rem`}
             maskRadius={maskRadius}
           />
@@ -285,6 +319,16 @@ export default function TextHoverEffectDetail() {
           step={1}
         />
       </div>
+
+      <ExportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        componentSource={transformedSource}
+        installCommand="npm install motion"
+        fontInstructions={`This component uses the "Chloe" font.\n\nIf we don't already have it in our codebase:\n\n1. Download Chloe-Regular.otf below\n2. Place it in your public/fonts/ directory\n3. Add this @font-face rule to your CSS:\n\n@font-face {\n  font-family: "Chloe";\n  src: url("/fonts/Chloe-Regular.otf") format("opentype");\n  font-weight: normal;\n  font-style: normal;\n  font-display: swap;\n}`}
+        fontDownloadUrl="/fonts/Chloe-Regular.otf"
+        fontFileName="Chloe-Regular.otf"
+      />
     </div>
   )
 }
