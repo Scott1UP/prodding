@@ -2,11 +2,12 @@ import { NavLink } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
-import { Type, Layers } from 'lucide-react'
+import { Type, Layers, Play } from 'lucide-react'
 
 const navItems = [
   { to: '/', label: 'Text Effects', icon: Type },
   { to: '/backgrounds', label: 'Backgrounds', icon: Layers },
+  { to: '/lottie-files', label: 'Lottie Files', icon: Play },
 ]
 
 export default function Sidebar() {

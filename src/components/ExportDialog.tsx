@@ -18,6 +18,8 @@ type ExportDialogProps = {
   fontInstructions?: string
   fontDownloadUrl?: string
   fontFileName?: string
+  assetDownloadUrl?: string
+  assetDownloadName?: string
 }
 
 function CopyButton({ text }: { text: string }) {
@@ -60,6 +62,8 @@ export function ExportDialog({
   fontInstructions,
   fontDownloadUrl,
   fontFileName,
+  assetDownloadUrl,
+  assetDownloadName,
 }: ExportDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -120,6 +124,20 @@ export function ExportDialog({
                     Download {fontFileName}
                   </a>
                 )}
+              </div>
+            )}
+
+            {assetDownloadUrl && (
+              <div className="flex flex-col gap-2">
+                <span className="text-sm text-text-primary font-medium">Download Asset</span>
+                <a
+                  href={assetDownloadUrl}
+                  download={assetDownloadName}
+                  className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
+                >
+                  <Download size={14} strokeWidth={1.5} />
+                  {assetDownloadName}
+                </a>
               </div>
             )}
           </TabsContent>
