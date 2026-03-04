@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { Card } from '@/components/ui/card'
 import { TextHoverEffect } from '@/components/ui/text-hover-effect'
+import { WritingText } from '@/components/ui/writing-text'
 
 const effects = [
   {
@@ -8,6 +9,19 @@ const effects = [
     name: 'Text Hover Effect',
     description: 'Gradient stroke reveal that follows your cursor.',
     preview: <TextHoverEffect text="Hover" />,
+  },
+  {
+    slug: 'writing-text',
+    name: 'Writing Text',
+    description: 'Word-by-word reveal with staggered spring animations.',
+    preview: (
+      <WritingText
+        text="Hello World"
+        className="text-3xl font-semibold"
+        style={{ color: '#7235ED' }}
+        stagger={0.12}
+      />
+    ),
   },
 ]
 
@@ -33,7 +47,7 @@ export default function TextEffects() {
             onClick={() => navigate(`/text-effects/${effect.slug}`)}
           >
             <div className="bg-white h-48 flex items-center justify-center overflow-hidden border-b border-border-subtle">
-              <div className="w-full h-full pointer-events-none">
+              <div className="w-full h-full pointer-events-none flex items-center justify-center">
                 {effect.preview}
               </div>
             </div>

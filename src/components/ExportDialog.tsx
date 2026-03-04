@@ -14,6 +14,7 @@ type ExportDialogProps = {
   onOpenChange: (open: boolean) => void
   componentSource: string
   installCommand: string
+  fileName?: string
   fontInstructions?: string
   fontDownloadUrl?: string
   fontFileName?: string
@@ -55,6 +56,7 @@ export function ExportDialog({
   onOpenChange,
   componentSource,
   installCommand,
+  fileName = "text-hover-effect.tsx",
   fontInstructions,
   fontDownloadUrl,
   fontFileName,
@@ -74,7 +76,7 @@ export function ExportDialog({
 
           <TabsContent value="component" className="min-h-0">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-text-secondary font-light">text-hover-effect.tsx</span>
+              <span className="text-sm text-text-secondary font-light">{fileName}</span>
               <CopyButton text={componentSource} />
             </div>
             <div className="rounded-lg border border-border bg-[#fafafa] overflow-auto max-h-[50vh]">
