@@ -29,7 +29,7 @@ const defaultSections: NarrativeSection[] = [
   {
     content: (
       <>
-        Growth here is grassroots and builder-led.
+        Growth in India is grassroots and builder-led.
         <br />
         Driven not by institutional mandates or market cycles,
         <br />
@@ -45,16 +45,18 @@ const defaultSections: NarrativeSection[] = [
         Devcon 8 comes to Mumbai to be part of that.
         <br />
         To contribute to it.
-        <br />
-        And to demonstrate that Ethereum's commitment to decentralization,
-        <br />
-        openness, and long-term thinking isn't rhetoric.
       </>
     ),
   },
   {
     content: (
-      <span className="font-semibold">It's how we show up.</span>
+      <>
+        And to demonstrate that Ethereum's commitment to decentralization,
+        <br />
+        openness, and long-term thinking isn't rhetoric.
+        <br /><br />
+        <span className="font-semibold">It's how we show up.</span>
+      </>
     ),
   },
 ]
@@ -126,19 +128,19 @@ export function ScrollingNarrativeBlock({
     >
       <div className="flex items-stretch min-h-[200px]">
         {/* Left — static branding */}
-        <div className="flex items-center gap-5 w-[44%] shrink-0 px-10 py-10">
+        <div className="flex items-center gap-4 w-[44%] shrink-0 px-10 py-10">
           <img
             src="/eth-logo.svg"
             alt="Ethereum"
             className="h-[88px] w-auto shrink-0"
           />
           <div>
-            <h2 className="text-[22px] font-bold text-white leading-[1.25] tracking-[-0.01em]">
+            <h2 className="text-[24px] font-bold text-white leading-[1.25] tracking-[-0.01em]">
               Building the infrastructure
               <br />
               for tomorrow's world
             </h2>
-            <p className="mt-1.5 text-white text-[17px] font-light leading-snug">
+            <p className="mt-2 text-white text-[20px] font-light leading-snug">
               The technology is no longer theoretical.
             </p>
           </div>
@@ -176,7 +178,7 @@ export function ScrollingNarrativeBlock({
               <button
                 key={i}
                 onClick={() => handleDotClick(i)}
-                className="cursor-pointer transition-all duration-300"
+                className="cursor-pointer transition-all duration-300 px-2 py-1 -mx-2 -my-1 flex items-center justify-center"
                 aria-label={`Go to section ${i + 1}`}
               >
                 <span
