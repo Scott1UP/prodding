@@ -128,7 +128,7 @@ export function ScrollingNarrativeBlock({
     >
       <div className="flex items-stretch min-h-[200px]">
         {/* Left — static branding */}
-        <div className="flex items-center gap-4 w-[44%] shrink-0 px-10 py-10">
+        <div className="flex items-center gap-6 w-[44%] shrink-0 px-10 py-10">
           <img
             src="/eth-logo.svg"
             alt="Ethereum"
