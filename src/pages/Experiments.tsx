@@ -7,6 +7,11 @@ const experiments = [
     name: 'Scrolling Narrative Block',
     description: 'A split-panel content block with scroll-triggered narrative sections.',
   },
+  {
+    slug: 'wallet-pass-designer',
+    name: 'Wallet Pass Designer',
+    description: 'Design and preview Apple Wallet and Google Wallet event ticket passes.',
+  },
 ]
 
 export default function Experiments() {
@@ -30,33 +35,61 @@ export default function Experiments() {
             className="group cursor-pointer overflow-hidden border-border-default shadow-none hover:border-text-tertiary transition-colors duration-200"
             onClick={() => navigate(`/experiments/${exp.slug}`)}
           >
-            {/* Preview — miniature static snapshot */}
-            <div className="h-48 flex items-center justify-center overflow-hidden border-b border-border-subtle relative"
-              style={{ background: 'linear-gradient(180deg, #1A0D33 -65%, #45326C 88.89%)' }}
-            >
-              <div className="w-full px-5 py-4 pointer-events-none flex items-center gap-3">
-                <img
-                  src="/eth-logo.svg"
-                  alt=""
-                  className="h-8 w-auto shrink-0 opacity-80"
-                />
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold text-white/90 leading-tight truncate">
-                    Building the infrastructure
-                    <br />
-                    for tomorrow's world
-                  </p>
-                  <p className="mt-1 text-[8px] text-white/40 font-light">
-                    The technology is no longer theoretical.
-                  </p>
-                </div>
-                <div className="ml-auto text-[9px] text-white/50 font-light shrink-0 max-w-[45%] leading-snug">
-                  It is infrastructure.
-                  <br />
-                  Real systems are being built.
+            {/* Preview thumbnail */}
+            {exp.slug === 'scrolling-narrative-block' && (
+              <div className="h-48 flex items-center justify-center overflow-hidden border-b border-border-subtle relative"
+                style={{ background: 'linear-gradient(180deg, #1A0D33 -65%, #45326C 88.89%)' }}
+              >
+                <div className="w-full px-5 py-4 pointer-events-none flex items-center gap-3">
+                  <img src="/eth-logo.svg" alt="" className="h-8 w-auto shrink-0 opacity-80" />
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-semibold text-white/90 leading-tight truncate">
+                      Building the infrastructure<br />for tomorrow's world
+                    </p>
+                    <p className="mt-1 text-[8px] text-white/40 font-light">The technology is no longer theoretical.</p>
+                  </div>
+                  <div className="ml-auto text-[9px] text-white/50 font-light shrink-0 max-w-[45%] leading-snug">
+                    It is infrastructure.<br />Real systems are being built.
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+            {exp.slug === 'wallet-pass-designer' && (
+              <div className="h-48 flex items-center justify-center overflow-hidden border-b border-border-subtle relative bg-[#f0efed]">
+                {/* Miniature pass mockup */}
+                <div
+                  className="w-[140px] rounded-lg overflow-hidden pointer-events-none"
+                  style={{
+                    backgroundColor: '#45326C',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                  }}
+                >
+                  <div className="h-[32px] bg-gradient-to-br from-purple-500/30 to-purple-900/40" />
+                  <div className="px-2.5 pt-2 pb-1">
+                    <div className="text-[7px] text-white/40 uppercase tracking-wider">Event</div>
+                    <div className="text-[10px] text-white font-semibold leading-tight">Devcon 8</div>
+                  </div>
+                  <div className="px-2.5 pb-1.5 flex justify-between">
+                    <div>
+                      <div className="text-[6px] text-white/35 uppercase">Venue</div>
+                      <div className="text-[7px] text-white/80">Jio World Centre</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[6px] text-white/35 uppercase">Date</div>
+                      <div className="text-[7px] text-white/80">Nov 12</div>
+                    </div>
+                  </div>
+                  <div className="mx-2 mb-2 mt-1 flex items-center justify-center rounded bg-white/10 py-1.5">
+                    <svg width="24" height="24" viewBox="0 0 7 7" fill="white" opacity={0.3}>
+                      <rect x="0" y="0" width="3" height="3" />
+                      <rect x="4" y="0" width="3" height="3" />
+                      <rect x="0" y="4" width="3" height="3" />
+                      <rect x="3" y="3" width="1" height="1" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="px-5 py-4">
               <h3 className="text-base font-medium text-text-primary">
