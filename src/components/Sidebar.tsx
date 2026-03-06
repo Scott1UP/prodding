@@ -11,9 +11,17 @@ const navItems = [
   { to: '/experiments', label: 'Experiments', icon: FlaskConical },
 ]
 
-export default function Sidebar() {
+interface SidebarProps {
+  open: boolean
+  onToggle: () => void
+}
+
+export default function Sidebar({ open, onToggle }: SidebarProps) {
   return (
-    <aside className="sticky top-0 h-screen w-[280px] shrink-0 border-r border-border bg-surface-raised flex flex-col">
+    <aside
+      className="sticky top-0 h-screen w-[280px] shrink-0 border-r border-border bg-surface-raised flex flex-col transition-[margin-left] duration-300 ease-out"
+      style={{ marginLeft: open ? 0 : -280 }}
+    >
       {/* Logo */}
       <div className="px-6 pt-8 pb-6">
         <div className="flex flex-col gap-1">

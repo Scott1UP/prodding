@@ -9,8 +9,10 @@ const defaultSections: NarrativeSection[] = [
   {
     content: (
       <>
+        The technology is no longer theoretical.
+        <br />
         <span className="font-semibold">It is infrastructure.</span>
-        <br /><br />
+        <br />
         Real systems are being built.
         <br />
         Real problems are being solved.
@@ -132,7 +134,7 @@ export function ScrollingNarrativeBlock({
           <img
             src="/eth-logo.svg"
             alt="Ethereum"
-            className="h-[88px] w-auto shrink-0"
+            className="h-[80px] w-auto shrink-0"
           />
           <div>
             <h2 className="text-[24px] font-bold text-white leading-[1.25] tracking-[-0.01em]">
@@ -141,7 +143,7 @@ export function ScrollingNarrativeBlock({
               for tomorrow's world
             </h2>
             <p className="mt-2 text-white text-[20px] font-light leading-snug">
-              The technology is no longer theoretical.
+              
             </p>
           </div>
         </div>
