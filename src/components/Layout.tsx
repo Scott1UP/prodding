@@ -22,7 +22,7 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-screen bg-surface overflow-x-clip">
-      <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen((v) => !v)} />
+      <Sidebar open={sidebarOpen} />
 
       <main className="flex-1 min-h-screen px-16 py-12">
         <Outlet />

@@ -13,10 +13,9 @@ const navItems = [
 
 interface SidebarProps {
   open: boolean
-  onToggle: () => void
 }
 
-export default function Sidebar({ open, onToggle }: SidebarProps) {
+export default function Sidebar({ open }: SidebarProps) {
   return (
     <aside
       className="sticky top-0 h-screen w-[280px] shrink-0 border-r border-border bg-surface-raised flex flex-col transition-[margin-left] duration-300 ease-out"
