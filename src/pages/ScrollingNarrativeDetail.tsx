@@ -1,8 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Code } from 'lucide-react'
+import { ArrowLeft, Code, ExternalLink, CalendarPlus, Megaphone, Paintbrush, HeartHandshake } from 'lucide-react'
 import { ScrollingNarrativeBlock } from '@/components/ui/scrolling-narrative-block'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { ExportDialog } from '@/components/ExportDialog'
 import scrollingNarrativeSource from '@/components/ui/scrolling-narrative-block.tsx?raw'
 
@@ -11,9 +17,9 @@ export default function ScrollingNarrativeDetail() {
   const [exportOpen, setExportOpen] = useState(false)
 
   return (
-    <div className="space-y-6">
+    <div>
       {/* Header */}
-      <header>
+      <header className="mb-6">
         <Button
           variant="ghost"
           size="sm"
@@ -44,16 +50,117 @@ export default function ScrollingNarrativeDetail() {
         </p>
       </header>
 
-      {/* Preview */}
-      <div className="w-full rounded-xl border border-border overflow-hidden bg-[#13101f] p-8">
-        <ScrollingNarrativeBlock />
-      </div>
+      {/* === Dummy content: Contribute and support === */}
+      <section className="w-full bg-[#EDECFF] p-10 md:p-12 space-y-6">
+        <div>
+          <h2 className="text-2xl font-extrabold text-[#1A1A2E] tracking-tight">
+            Contribute and support
+          </h2>
+          <p className="mt-2 text-base text-[#1A1A2E]/60 font-light leading-relaxed max-w-2xl">
+            Devcon works best when builders ship, communities show up and connect, and supporters help bring it all together.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[
+            {
+              icon: <Megaphone size={20} strokeWidth={1.5} />,
+              iconBg: 'bg-[#E0DEFF]',
+              iconColor: 'text-[#5B2EBF]',
+              title: 'Submit a DIP',
+              description: 'Devcon Improvement Proposals (DIPs) are ways for the community to suggest things to add, remove, or improve at the upcoming Devcon.',
+              cta: 'Visit Devcon forum',
+              href: '#',
+            },
+            {
+              icon: <Paintbrush size={20} strokeWidth={1.5} />,
+              iconBg: 'bg-[#D5F5EC]',
+              iconColor: 'text-[#0D9373]',
+              title: 'Join our Creative Crew',
+              description: "Create content. Build hype. Grow the community. If you've got reach and a genuine love for the ecosystem, we want to collaborate with you.",
+              cta: 'Media Partners & Press',
+              href: '#',
+            },
+            {
+              icon: <CalendarPlus size={20} strokeWidth={1.5} />,
+              iconBg: 'bg-[#E0DEFF]',
+              iconColor: 'text-[#5B2EBF]',
+              title: 'Host a community event',
+              description: 'Host a meetup, workshop, or side event as part of our Ecosystem Program and make it a part of the broader Devcon India story.',
+              cta: 'Coming soon!',
+            },
+            {
+              icon: <HeartHandshake size={20} strokeWidth={1.5} />,
+              iconBg: 'bg-[#FFE8EC]',
+              iconColor: 'text-[#E05075]',
+              title: 'Volunteer Program',
+              description: 'Join a team of passionate contributors keeping Devcon running smoothly – from registration desks to behind-the-scenes management.',
+              cta: 'Applications coming soon!',
+            },
+          ].map((card) => (
+            <div
+              key={card.title}
+              className="bg-white rounded-xl p-6 space-y-3"
+            >
+              <div className={`w-10 h-10 rounded-lg ${card.iconBg} ${card.iconColor} flex items-center justify-center`}>
+                {card.icon}
+              </div>
+              <h3 className="text-base font-bold text-[#1A1A2E]">{card.title}</h3>
+              <p className="text-[14px] text-[#1A1A2E]/60 font-light leading-relaxed">
+                {card.description}
+              </p>
+              {card.href ? (
+                <a
+                  href={card.href}
+                  className="inline-flex items-center gap-1 text-[14px] font-semibold text-[#5B2EBF] hover:text-[#7235ED] transition-colors"
+                >
+                  {card.cta}
+                  <ExternalLink size={12} strokeWidth={2} />
+                </a>
+              ) : (
+                <p className="text-[14px] font-semibold text-[#5B2EBF]">{card.cta}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
 
-      {/* Behavior notes */}
-      <div className="text-text-tertiary text-sm font-light space-y-1">
-        <p>Hover over the block, then scroll to advance between sections.</p>
-        <p>Click the indicators on the right to jump to a specific section.</p>
-      </div>
+      {/* Preview */}
+      <ScrollingNarrativeBlock />
+
+      {/* === Dummy content: FAQ === */}
+      <section className="w-full bg-[#EDECFF] p-10 md:p-12 space-y-6">
+        <h2 className="text-2xl font-extrabold text-[#1A1A2E] tracking-tight text-center">
+          Frequently asked questions
+        </h2>
+        <div className="max-w-2xl mx-auto bg-white rounded-xl">
+          <Accordion type="single" collapsible defaultValue="item-1">
+            <AccordionItem value="item-1" className="px-5">
+              <AccordionTrigger className="text-base font-medium text-[#1A1A2E]">
+                When will General ticket sales start?
+              </AccordionTrigger>
+              <AccordionContent className="text-[14px] text-[#1A1A2E]/60 font-light leading-relaxed">
+                General Admission ticket sales for Devcon India will launch in early May. Stay tuned for updates as we get closer to this date.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-2" className="px-5">
+              <AccordionTrigger className="text-base font-medium text-[#1A1A2E]">
+                Will there be opportunities to obtain discounted tickets?
+              </AccordionTrigger>
+              <AccordionContent className="text-[14px] text-[#1A1A2E]/60 font-light leading-relaxed">
+                Yes! We offer discounted tickets for students, builders from underrepresented regions, and active open-source contributors. Details will be announced closer to the sale date.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="item-3" className="px-5 border-b-0">
+              <AccordionTrigger className="text-base font-medium text-[#1A1A2E]">
+                Can I purchase tickets with crypto?
+              </AccordionTrigger>
+              <AccordionContent className="text-[14px] text-[#1A1A2E]/60 font-light leading-relaxed">
+                Absolutely. We'll support payments in ETH and select stablecoins on Ethereum mainnet and popular L2s. Fiat options will also be available.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </section>
 
       <ExportDialog
         open={exportOpen}

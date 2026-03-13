@@ -125,7 +125,7 @@ export function ScrollingNarrativeBlock({
       ref={containerRef}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
-      className="relative w-full rounded-2xl overflow-hidden select-none"
+      className="relative w-full overflow-hidden select-none"
       style={{ background: 'linear-gradient(180deg, #1A0D33 -65%, #45326C 88.89%)' }}
     >
       <div className="flex items-stretch min-h-[200px]">
