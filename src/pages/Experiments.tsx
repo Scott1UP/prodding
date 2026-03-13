@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { Card } from '@/components/ui/card'
+import { AnimatedGradientBorder } from '@/components/ui/animated-gradient-border'
 
 const experiments = [
   {
@@ -11,6 +12,11 @@ const experiments = [
     slug: 'wallet-pass-designer',
     name: 'Wallet Pass Designer',
     description: 'Design and preview Apple Wallet and Google Wallet event ticket passes.',
+  },
+  {
+    slug: 'animated-gradient-border',
+    name: 'Animated Gradient Border',
+    description: 'A pill container with a rotating conic gradient border animation.',
   },
 ]
 
@@ -88,6 +94,20 @@ export default function Experiments() {
                     </svg>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {exp.slug === 'animated-gradient-border' && (
+              <div className="h-48 flex items-center justify-center overflow-hidden border-b border-border-subtle relative bg-[#E8E5F1]">
+                <AnimatedGradientBorder borderWidth={2} speed={3}>
+                  <div className="px-5 py-2.5 flex items-center gap-3">
+                    <span className="text-[11px] text-[#1A1040]/60 font-light">Deadline</span>
+                    <span className="text-[14px] font-bold text-[#1A1040]">30 Apr</span>
+                    <span className="bg-[#6535C9] text-white text-[10px] px-3 py-1.5 rounded-full font-medium">
+                      Apply &rarr;
+                    </span>
+                  </div>
+                </AnimatedGradientBorder>
               </div>
             )}
 

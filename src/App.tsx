@@ -10,6 +10,7 @@ import BloomingEthFlowerDetail from './pages/BloomingEthFlowerDetail'
 import Experiments from './pages/Experiments'
 import ScrollingNarrativeDetail from './pages/ScrollingNarrativeDetail'
 import WalletPassDesignerDetail from './pages/WalletPassDesignerDetail'
+import AnimatedGradientBorderDetail from './pages/AnimatedGradientBorderDetail'
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="experiments" element={<Experiments />} />
         <Route path="experiments/scrolling-narrative-block" element={<ScrollingNarrativeDetail />} />
         <Route path="experiments/wallet-pass-designer" element={<WalletPassDesignerDetail />} />
+        <Route path="experiments/animated-gradient-border" element={<AnimatedGradientBorderDetail />} />
       </Route>
     </Routes>
   )
