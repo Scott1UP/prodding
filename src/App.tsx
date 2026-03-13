@@ -3,6 +3,7 @@ import Layout from './components/Layout'
 import TextEffects from './pages/TextEffects'
 import TextHoverEffectDetail from './pages/TextHoverEffectDetail'
 import WritingTextDetail from './pages/WritingTextDetail'
+import CountingNumberDetail from './pages/CountingNumberDetail'
 import Backgrounds from './pages/Backgrounds'
 import LottieFiles from './pages/LottieFiles'
 import BloomingEthFlowerDetail from './pages/BloomingEthFlowerDetail'
@@ -17,6 +18,7 @@ export default function App() {
         <Route index element={<TextEffects />} />
         <Route path="text-effects/text-hover-effect" element={<TextHoverEffectDetail />} />
         <Route path="text-effects/writing-text" element={<WritingTextDetail />} />
+        <Route path="text-effects/counting-number" element={<CountingNumberDetail />} />
         <Route path="backgrounds" element={<Backgrounds />} />
         <Route path="lottie-files" element={<LottieFiles />} />
         <Route path="lottie-files/blooming-eth-flower" element={<BloomingEthFlowerDetail />} />

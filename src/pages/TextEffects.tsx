@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { Card } from '@/components/ui/card'
 import { TextHoverEffect } from '@/components/ui/text-hover-effect'
 import { WritingText } from '@/components/ui/writing-text'
+import { CountingNumber } from '@/components/ui/counting-number'
 
 const effects = [
   {
@@ -21,6 +22,16 @@ const effects = [
         style={{ color: '#7235ED' }}
         stagger={0.12}
       />
+    ),
+  },
+  {
+    slug: 'counting-number',
+    name: 'Counting Number',
+    description: 'Spring-animated number counter with configurable physics.',
+    preview: (
+      <span className="text-3xl font-extrabold text-[#1A1A2E] tabular-nums tracking-tight">
+        $<CountingNumber number={564} transition={{ stiffness: 90, damping: 50 }} />M
+      </span>
     ),
   },
 ]
