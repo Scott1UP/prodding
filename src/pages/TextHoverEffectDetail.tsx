@@ -37,6 +37,28 @@ export default function TextHoverEffectDetail() {
   const [exportOpen, setExportOpen] = useState(false)
   const gradientRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const previewRef = useRef<HTMLDivElement>(null)
+  const [previewHovered, setPreviewHovered] = useState(false)
+  const [cursorPos, setCursorPos] = useState({ cx: 50, cy: 50 })
+
+  const handlePreviewMouseMove = useCallback((e: React.MouseEvent) => {
+    const rect = previewRef.current?.getBoundingClientRect()
+    if (!rect) return
+    setCursorPos({
+      cx: ((e.clientX - rect.left) / rect.width) * 100,
+      cy: ((e.clientY - rect.top) / rect.height) * 100,
+    })
+  }, [])
+
+  const keywordMask = previewHovered
+    ? (() => {
+        const rect = previewRef.current?.getBoundingClientRect()
+        const w = rect?.width ?? 1
+        const h = rect?.height ?? 1
+        const r = (maskRadius / 100) * Math.sqrt((w * w + h * h) / 2) * 2.5
+        return `radial-gradient(circle ${r}px at ${cursorPos.cx}% ${cursorPos.cy}%, transparent 0%, transparent 20%, black 100%)`
+      })()
+    : undefined
 
   const transformedSource = useMemo(() => {
     let source = textHoverEffectSource
@@ -292,7 +314,13 @@ export default function TextHoverEffectDetail() {
 
       {/* Component preview */}
       <div className="w-full rounded-xl border border-border overflow-hidden" style={{ backgroundColor: bgColor }}>
-        <div className="w-full h-[480px]">
+        <div
+          ref={previewRef}
+          className="w-full h-[480px] relative"
+          onMouseEnter={() => setPreviewHovered(true)}
+          onMouseLeave={() => setPreviewHovered(false)}
+          onMouseMove={handlePreviewMouseMove}
+        >
           <TextHoverEffect
             text={text}
             strokeColor={strokeColor}
@@ -303,6 +331,28 @@ export default function TextHoverEffectDetail() {
             fontSize={`${fontSize}rem`}
             maskRadius={maskRadius}
           />
+          <div
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            style={{
+              maskImage: keywordMask,
+              WebkitMaskImage: keywordMask,
+            }}
+          >
+            <div
+              className="text-center uppercase tracking-wide leading-relaxed"
+              style={{
+                fontFamily: 'Poppins, sans-serif',
+                fontWeight: 300,
+                fontSize: '1.25rem',
+                color: '#1a1a3e',
+                letterSpacing: '0.05em',
+              }}
+            >
+              <p>Talks&ensp;•&ensp;Workshops&ensp;•&ensp;Experiences&ensp;•&ensp;Cowork&ensp;•&ensp;AI</p>
+              <p>Censorship Resistance&ensp;•&ensp;Open Source&ensp;•&ensp;Privacy&ensp;•&ensp;Security</p>
+              <p>DeFi&ensp;•&ensp;Social&ensp;•&ensp;Cypherpunk&ensp;•&ensp;Art&ensp;•&ensp;Real World Ethereum</p>
+            </div>
+          </div>
         </div>
       </div>
 
