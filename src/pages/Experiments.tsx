@@ -18,6 +18,11 @@ const experiments = [
     name: 'Animated Gradient Border',
     description: 'A pill container with a rotating conic gradient border animation.',
   },
+  {
+    slug: 'rotating-speakers',
+    name: 'Rotating Speakers',
+    description: 'Speaker portraits orbiting in concentric elliptical rings with hover-pause and click-to-reveal.',
+  },
 ]
 
 export default function Experiments() {
@@ -108,6 +113,50 @@ export default function Experiments() {
                     </span>
                   </div>
                 </AnimatedGradientBorder>
+              </div>
+            )}
+
+            {exp.slug === 'rotating-speakers' && (
+              <div className="h-48 flex items-center justify-center overflow-hidden border-b border-border-subtle relative bg-[#fafaf9]">
+                <div className="relative" style={{ width: 160, height: 120 }}>
+                  {[44, 62, 80].map((r, i) => (
+                    <div
+                      key={i}
+                      className="absolute rounded-full border border-black/[0.06]"
+                      style={{
+                        width: r * 2,
+                        height: r * 0.7 * 2,
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                      }}
+                    />
+                  ))}
+                  {[
+                    { x: 0, y: -20, color: '#6366f1' },
+                    { x: 42, y: 6, color: '#8b5cf6' },
+                    { x: -42, y: 6, color: '#d946ef' },
+                    { x: 0, y: -36, color: '#f97316' },
+                    { x: 58, y: 12, color: '#22c55e' },
+                    { x: -58, y: 12, color: '#06b6d4' },
+                    { x: 0, y: -50, color: '#7c3aed' },
+                    { x: 76, y: 16, color: '#e11d48' },
+                    { x: -76, y: 16, color: '#2563eb' },
+                  ].map((dot, i) => (
+                    <div
+                      key={i}
+                      className="absolute rounded-full"
+                      style={{
+                        width: 10,
+                        height: 10,
+                        backgroundColor: dot.color,
+                        top: '50%',
+                        left: '50%',
+                        transform: `translate(calc(-50% + ${dot.x}px), calc(-50% + ${dot.y}px))`,
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
             )}
 
