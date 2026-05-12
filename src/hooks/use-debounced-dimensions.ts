@@ -1,4 +1,5 @@
-import { RefObject, useEffect, useState } from "react"
+import type { RefObject } from "react"
+import { useEffect, useState } from "react"
 
 interface Dimensions {
   width: number
@@ -14,7 +15,7 @@ export function useDimensions(
   })
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout
+    let timeoutId: ReturnType<typeof setTimeout>
 
     const updateDimensions = () => {
       if (ref.current) {
