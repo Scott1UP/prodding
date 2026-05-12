@@ -1,33 +1,26 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { RotatingSpeakers } from '@/components/ui/rotating-speakers'
 import { RotatingSpeakersMobile } from '@/components/ui/rotating-speakers-mobile'
 import { RotatingSpeakersSemicircle } from '@/components/ui/rotating-speakers-semicircle'
 import { LivingConstellation } from '@/components/ui/living-constellation'
 import { LivingConstellationV2 } from '@/components/ui/living-constellation-v2'
+import { LivingConstellationV2Mobile } from '@/components/ui/living-constellation-v2-mobile'
 import { speakers } from '@/data/speakers'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ExportDialog } from '@/components/ExportDialog'
 import { ArrowLeft, Code } from 'lucide-react'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import rotatingSpeakersSource from '@/components/ui/rotating-speakers.tsx?raw'
 import rotatingSpeakersMobileSource from '@/components/ui/rotating-speakers-mobile.tsx?raw'
 import rotatingSpeakersSemicircleSource from '@/components/ui/rotating-speakers-semicircle.tsx?raw'
 import livingConstellationSource from '@/components/ui/living-constellation.tsx?raw'
 import livingConstellationV2Source from '@/components/ui/living-constellation-v2.tsx?raw'
+import livingConstellationV2MobileSource from '@/components/ui/living-constellation-v2-mobile.tsx?raw'
 import speakersDataSource from '@/data/speakers.ts?raw'
-
-function useIsMobile(breakpoint = 768) {
-  const [isMobile, setIsMobile] = useState(() => window.matchMedia(`(max-width: ${breakpoint}px)`).matches)
-  useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${breakpoint}px)`)
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
-    mql.addEventListener('change', handler)
-    return () => mql.removeEventListener('change', handler)
-  }, [breakpoint])
-  return isMobile
-}
 
 const RING_LABELS = ['Inner ring', 'Middle ring', 'Outer ring']
 
@@ -44,7 +37,7 @@ export default function RotatingSpeakersDetail() {
       : version === 'constellation'
         ? `// living-constellation.tsx\n${livingConstellationSource}\n\n// speakers.ts (data)\n${speakersDataSource}`
         : version === 'constellation-v2'
-          ? `// living-constellation-v2.tsx\n${livingConstellationV2Source}\n\n// speakers.ts (data)\n${speakersDataSource}`
+          ? `// living-constellation-v2.tsx\n${livingConstellationV2Source}\n\n// living-constellation-v2-mobile.tsx\n${livingConstellationV2MobileSource}\n\n// speakers.ts (data)\n${speakersDataSource}`
           : `// rotating-speakers.tsx\n${rotatingSpeakersSource}\n\n// rotating-speakers-mobile.tsx\n${rotatingSpeakersMobileSource}\n\n// speakers.ts (data)\n${speakersDataSource}`
 
   return (
@@ -60,7 +53,7 @@ export default function RotatingSpeakersDetail() {
           Back
         </Button>
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-extrabold text-text-primary tracking-tight">
+          <h1 className="text-2xl lg:text-3xl font-extrabold text-text-primary tracking-tight">
             Rotating Speakers
           </h1>
           <Button
@@ -84,48 +77,62 @@ export default function RotatingSpeakersDetail() {
           <Label className="text-base text-text-secondary font-light shrink-0">
             Version
           </Label>
-          <div className="flex rounded-md border border-border-default overflow-hidden">
-            <button
-              className={`px-3 py-1.5 text-[14px] transition-colors ${
-                version === 'original'
-                  ? 'bg-text-primary text-white'
-                  : 'text-text-secondary hover:bg-surface-raised'
-              }`}
-              onClick={() => setVersion('original')}
-            >
-              Original
-            </button>
-            <button
-              className={`px-3 py-1.5 text-[14px] transition-colors ${
-                version === 'semicircle'
-                  ? 'bg-text-primary text-white'
-                  : 'text-text-secondary hover:bg-surface-raised'
-              }`}
-              onClick={() => setVersion('semicircle')}
-            >
-              Semi-circle
-            </button>
-            <button
-              className={`px-3 py-1.5 text-[14px] transition-colors ${
-                version === 'constellation'
-                  ? 'bg-text-primary text-white'
-                  : 'text-text-secondary hover:bg-surface-raised'
-              }`}
-              onClick={() => setVersion('constellation')}
-            >
-              Constellation
-            </button>
-            <button
-              className={`px-3 py-1.5 text-[14px] transition-colors ${
-                version === 'constellation-v2'
-                  ? 'bg-text-primary text-white'
-                  : 'text-text-secondary hover:bg-surface-raised'
-              }`}
-              onClick={() => setVersion('constellation-v2')}
-            >
-              Constellation 2.0
-            </button>
-          </div>
+          {isMobile ? (
+            <Select value={version} onValueChange={(v) => setVersion(v as typeof version)}>
+              <SelectTrigger className="h-9 text-sm border-border-default">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="original">Original</SelectItem>
+                <SelectItem value="semicircle">Semi-circle</SelectItem>
+                <SelectItem value="constellation">Constellation</SelectItem>
+                <SelectItem value="constellation-v2">Constellation 2.0</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
+            <div className="flex rounded-md border border-border-default overflow-hidden">
+              <button
+                className={`px-3 py-1.5 text-[14px] transition-colors ${
+                  version === 'original'
+                    ? 'bg-text-primary text-white'
+                    : 'text-text-secondary hover:bg-surface-raised'
+                }`}
+                onClick={() => setVersion('original')}
+              >
+                Original
+              </button>
+              <button
+                className={`px-3 py-1.5 text-[14px] transition-colors ${
+                  version === 'semicircle'
+                    ? 'bg-text-primary text-white'
+                    : 'text-text-secondary hover:bg-surface-raised'
+                }`}
+                onClick={() => setVersion('semicircle')}
+              >
+                Semi-circle
+              </button>
+              <button
+                className={`px-3 py-1.5 text-[14px] transition-colors ${
+                  version === 'constellation'
+                    ? 'bg-text-primary text-white'
+                    : 'text-text-secondary hover:bg-surface-raised'
+                }`}
+                onClick={() => setVersion('constellation')}
+              >
+                Constellation
+              </button>
+              <button
+                className={`px-3 py-1.5 text-[14px] transition-colors ${
+                  version === 'constellation-v2'
+                    ? 'bg-text-primary text-white'
+                    : 'text-text-secondary hover:bg-surface-raised'
+                }`}
+                onClick={() => setVersion('constellation-v2')}
+              >
+                Constellation 2.0
+              </button>
+            </div>
+          )}
         </div>
 
         {!isMobile && version === 'semicircle' && (
@@ -162,11 +169,11 @@ export default function RotatingSpeakersDetail() {
       {isMobile ? (
         version === 'constellation' || version === 'constellation-v2' ? (
           <div
-            className="relative -mx-16 overflow-hidden"
+            className="relative -mx-4 md:-mx-8 overflow-hidden"
             style={{
               background: 'var(--BG-Main, linear-gradient(0deg, #E5EBFF 19.98%, #FBFAFC 100%))',
-              height: 'min(150vw, calc(100vh - 220px))',
-              minHeight: 640,
+              height: 'min(170vw, calc(100vh - 180px))',
+              minHeight: 740,
             }}
           >
             <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#FBFAFC] to-transparent z-10 pointer-events-none" />
@@ -178,14 +185,14 @@ export default function RotatingSpeakersDetail() {
               style={{ height: '88%', objectFit: 'contain' }}
             />
             {version === 'constellation-v2' ? (
-              <LivingConstellationV2 speakers={speakers} />
+              <LivingConstellationV2Mobile speakers={speakers} />
             ) : (
               <LivingConstellation speakers={speakers} />
             )}
           </div>
         ) : (
           <div
-            className="relative -mx-16 overflow-x-clip"
+            className="relative -mx-4 md:-mx-8 overflow-x-clip"
             style={{ background: 'var(--BG-Main, linear-gradient(0deg, #E5EBFF 19.98%, #FBFAFC 100%))' }}
           >
             <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#FBFAFC] to-transparent z-10 pointer-events-none" />

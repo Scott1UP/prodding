@@ -13,13 +13,22 @@ const navItems = [
 
 interface SidebarProps {
   open: boolean
+  overlay?: boolean
+  onClose?: () => void
 }
 
-export default function Sidebar({ open }: SidebarProps) {
+export default function Sidebar({ open, overlay, onClose }: SidebarProps) {
   return (
     <aside
-      className="sticky top-0 h-screen w-[280px] shrink-0 border-r border-border bg-surface-raised flex flex-col transition-[margin-left] duration-300 ease-out"
-      style={{ marginLeft: open ? 0 : -280 }}
+      className={cn(
+        'h-screen w-[280px] shrink-0 border-r border-border bg-surface-raised flex flex-col transition-all duration-300 ease-out',
+        overlay ? 'fixed top-0 left-0 z-40 shadow-2xl' : 'sticky top-0'
+      )}
+      style={
+        overlay
+          ? { transform: open ? 'translateX(0)' : 'translateX(-100%)' }
+          : { marginLeft: open ? 0 : -280 }
+      }
     >
       {/* Logo */}
       <div className="px-6 pt-8 pb-6">
@@ -41,7 +50,7 @@ export default function Sidebar({ open }: SidebarProps) {
           Pages
         </p>
         {navItems.map(({ to, label, icon: Icon }) => (
-          <NavLink key={to} to={to} end>
+          <NavLink key={to} to={to} end onClick={overlay ? onClose : undefined}>
             {({ isActive }) => (
               <Button
                 variant="ghost"
