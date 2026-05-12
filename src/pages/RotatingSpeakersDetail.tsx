@@ -22,6 +22,8 @@ import livingConstellationSource from '@/components/ui/living-constellation.tsx?
 import livingConstellationV2Source from '@/components/ui/living-constellation-v2.tsx?raw'
 import livingConstellationV2MobileSource from '@/components/ui/living-constellation-v2-mobile.tsx?raw'
 import speakersDataSource from '@/data/speakers.ts?raw'
+import animatedGradientSource from '@/components/fancy/background/animated-gradient-with-svg.tsx?raw'
+import useDebouncedDimensionsSource from '@/hooks/use-debounced-dimensions.ts?raw'
 
 const RING_LABELS = ['Inner ring', 'Middle ring', 'Outer ring']
 
@@ -40,7 +42,7 @@ export default function RotatingSpeakersDetail() {
       : version === 'constellation'
         ? `// living-constellation.tsx\n${livingConstellationSource}\n\n// speakers.ts (data)\n${speakersDataSource}`
         : version === 'constellation-v2'
-          ? `// living-constellation-v2.tsx\n${livingConstellationV2Source}\n\n// living-constellation-v2-mobile.tsx\n${livingConstellationV2MobileSource}\n\n// speakers.ts (data)\n${speakersDataSource}`
+          ? `// living-constellation-v2.tsx\n${livingConstellationV2Source}\n\n// living-constellation-v2-mobile.tsx\n${livingConstellationV2MobileSource}\n\n// animated-gradient-with-svg.tsx\n${animatedGradientSource}\n\n// use-debounced-dimensions.ts\n${useDebouncedDimensionsSource}\n\n// speakers.ts (data)\n${speakersDataSource}`
           : `// rotating-speakers.tsx\n${rotatingSpeakersSource}\n\n// rotating-speakers-mobile.tsx\n${rotatingSpeakersMobileSource}\n\n// speakers.ts (data)\n${speakersDataSource}`
 
   return (
