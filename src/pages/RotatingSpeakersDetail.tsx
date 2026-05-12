@@ -6,6 +6,7 @@ import { RotatingSpeakersSemicircle } from '@/components/ui/rotating-speakers-se
 import { LivingConstellation } from '@/components/ui/living-constellation'
 import { LivingConstellationV2 } from '@/components/ui/living-constellation-v2'
 import { LivingConstellationV2Mobile } from '@/components/ui/living-constellation-v2-mobile'
+import AnimatedGradient from '@/components/fancy/background/animated-gradient-with-svg'
 import { speakers } from '@/data/speakers'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
@@ -30,6 +31,8 @@ export default function RotatingSpeakersDetail() {
   const isMobile = useIsMobile(1024)
   const [version, setVersion] = useState<'original' | 'semicircle' | 'constellation' | 'constellation-v2'>('original')
   const [ringSpeeds, setRingSpeeds] = useState<[number, number, number]>([20, 34, 48])
+  const [gradientSpeed, setGradientSpeed] = useState(15)
+  const [gradientColors, setGradientColors] = useState(['#fff0e6', '#f5f0ff', '#c4aaf7', '#FFE0CC'])
 
   const combinedSource =
     version === 'semicircle'
@@ -164,6 +167,46 @@ export default function RotatingSpeakersDetail() {
               ))}
           </div>
         )}
+
+        {!isMobile && version === 'constellation-v2' && (
+          <div className="flex items-center gap-4">
+            <Label className="text-base text-text-secondary font-light shrink-0">
+              Gradient
+            </Label>
+            <div className="flex items-center gap-2">
+              <span className="text-[14px] text-text-tertiary shrink-0">Speed</span>
+              <Slider
+                className="w-24"
+                value={[gradientSpeed]}
+                onValueChange={([v]) => setGradientSpeed(v)}
+                min={1}
+                max={20}
+                step={1}
+              />
+              <span className="text-[14px] text-text-tertiary font-mono w-8 text-right shrink-0">
+                {gradientSpeed}s
+              </span>
+            </div>
+            {gradientColors.map((color, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                <input
+                  type="color"
+                  value={color}
+                  onChange={(e) => {
+                    setGradientColors((prev) => {
+                      const next = [...prev]
+                      next[i] = e.target.value
+                      return next
+                    })
+                  }}
+                  className="w-7 h-7 rounded-md border border-border-default cursor-pointer p-0"
+                  style={{ WebkitAppearance: 'none', appearance: 'none' }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
       </div>
 
       {isMobile ? (
@@ -178,6 +221,9 @@ export default function RotatingSpeakersDetail() {
           >
             <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#FBFAFC] to-transparent z-10 pointer-events-none" />
             <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#E8EDFF] to-transparent z-10 pointer-events-none" />
+            {version === 'constellation-v2' && (
+              <AnimatedGradient colors={gradientColors} speed={gradientSpeed} blur="heavy" />
+            )}
             <img
               src="/speakers/bg/DC8-Moon-BG-Element.svg"
               alt=""
@@ -217,6 +263,9 @@ export default function RotatingSpeakersDetail() {
         >
           <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#FBFAFC] to-transparent z-10 pointer-events-none" />
           <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#E8EDFF] to-transparent z-10 pointer-events-none" />
+          {version === 'constellation-v2' && (
+            <AnimatedGradient colors={gradientColors} speed={gradientSpeed} blur="heavy" />
+          )}
           <img
             src="/speakers/bg/DC8-Moon-BG-Element.svg"
             alt=""
@@ -227,8 +276,9 @@ export default function RotatingSpeakersDetail() {
             }`}
             style={{
               width: version === 'semicircle' ? '70%' : undefined,
-              height: version === 'semicircle' ? undefined : '92%',
+              height: version === 'semicircle' ? undefined : '100%',
               objectFit: 'contain',
+              mixBlendMode: version === 'constellation-v2' ? 'overlay' : undefined,
             }}
           />
           {version === 'original' ? (
