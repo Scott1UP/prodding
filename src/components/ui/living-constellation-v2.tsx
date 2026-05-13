@@ -9,6 +9,7 @@ import {
   type MotionValue,
 } from 'motion/react'
 import type { Speaker } from '@/data/speakers'
+import { SPEAKER_BLUR_DATA } from '@/data/speaker-blur-data'
 
 const EVENT_LABEL: Record<string, string> = {
   '/speakers/past-event-logos/devcon4-prague.png': 'Devcon 4 Prague',
@@ -191,7 +192,7 @@ export function LivingConstellationV2({ speakers, className = '' }: LivingConste
       </div>
 
       {/* Center title / hovered name (pill-backed so it reads above cards) */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20">
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-[25]">
         <AnimatePresence mode="popLayout">
           {hoveredSpeaker ? (
             <motion.div
@@ -310,10 +311,21 @@ export function LivingConstellationV2({ speakers, className = '' }: LivingConste
                     fontSize: 56,
                   }}
                 >
+                  {SPEAKER_BLUR_DATA[selected.image] && (
+                    <img
+                      src={SPEAKER_BLUR_DATA[selected.image]}
+                      alt=""
+                      aria-hidden
+                      className="absolute inset-0 w-full h-full object-cover"
+                      style={{ filter: 'blur(20px)', transform: 'scale(1.2)' }}
+                    />
+                  )}
                   <img
                     src={selected.image}
                     alt={selected.name}
                     className="absolute inset-0 w-full h-full object-cover"
+                    style={{ opacity: 0, transition: 'opacity 300ms ease-out' }}
+                    onLoad={(e) => { e.currentTarget.style.opacity = '1' }}
                     onError={(e) => {
                       e.currentTarget.style.display = 'none'
                     }}
@@ -323,7 +335,7 @@ export function LivingConstellationV2({ speakers, className = '' }: LivingConste
                       className="absolute top-3 left-3 flex items-center gap-1.5 rounded-full px-2.5"
                       style={{
                         height: 32,
-                        background: 'rgba(255,255,255,0.3)',
+                        background: 'rgba(22,11,43,0.3)',
                         backdropFilter: 'blur(12px)',
                         WebkitBackdropFilter: 'blur(12px)',
                       }}
@@ -429,6 +441,7 @@ function Ring({
         left: '50%',
         width: 0,
         height: 0,
+        zIndex: group.some(s => s.id === hovered) ? 20 : ringIndex,
         x: reduceMotion ? 0 : tx,
         y: reduceMotion ? 0 : ty,
       }}
@@ -608,10 +621,21 @@ function SpeakerCard({
                 transition: 'box-shadow 180ms ease-out',
               }}
             >
+              {SPEAKER_BLUR_DATA[speaker.image] && (
+                <img
+                  src={SPEAKER_BLUR_DATA[speaker.image]}
+                  alt=""
+                  aria-hidden
+                  className="absolute inset-0 w-full h-full object-cover"
+                  style={{ filter: 'blur(20px)', transform: 'scale(1.2)' }}
+                />
+              )}
               <img
                 src={speaker.image}
                 alt=""
-                className="w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ opacity: 0, transition: 'opacity 300ms ease-out' }}
+                onLoad={(e) => { e.currentTarget.style.opacity = '1' }}
               />
             </div>
             {speaker.companyLogo && (
