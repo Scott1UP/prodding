@@ -37,9 +37,3 @@ export const speakers: Speaker[] = [
   { id: 'vinay', name: 'Vinay Gupta', title: 'Founder', company: 'Mattereum', color: '#6366f1', image: '/speakers/vinay-gupta.jpg', eventLogo: '/speakers/past-event-logos/devcon4-prague.png', companyLogo: '/speakers/company-logos/mattereum.png' },
   { id: 'aayush', name: 'Aayush Gupta', title: 'Founder', company: 'SettleX', color: '#2563eb', image: '/speakers/aayush-gupta.jpg', eventLogo: '/speakers/past-event-logos/devcon7-sea.png', companyLogo: '/speakers/company-logos/settlex.png' },
 ]
-
-export const eventLogos = [
-  '/speakers/past-event-logos/devcon5-osaka.png',
-  '/speakers/past-event-logos/devcon6-bogota.png',
-  '/speakers/past-event-logos/devcon7-sea.png',
-]

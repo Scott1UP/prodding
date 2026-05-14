@@ -20,6 +20,8 @@ type ExportDialogProps = {
   fontFileName?: string
   assetDownloadUrl?: string
   assetDownloadName?: string
+  setupNotes?: string
+  setupNotesLabel?: string
 }
 
 function CopyButton({ text }: { text: string }) {
@@ -64,6 +66,8 @@ export function ExportDialog({
   fontFileName,
   assetDownloadUrl,
   assetDownloadName,
+  setupNotes,
+  setupNotesLabel = 'Additional Setup',
 }: ExportDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -124,6 +128,20 @@ export function ExportDialog({
                     Download {fontFileName}
                   </a>
                 )}
+              </div>
+            )}
+
+            {setupNotes && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-text-primary font-medium">{setupNotesLabel}</span>
+                  <CopyButton text={setupNotes} />
+                </div>
+                <div className="rounded-lg border border-border bg-[#fafafa] overflow-auto">
+                  <pre className="p-4 text-[13px] leading-relaxed whitespace-pre-wrap">
+                    <code>{setupNotes}</code>
+                  </pre>
+                </div>
               </div>
             )}
 
