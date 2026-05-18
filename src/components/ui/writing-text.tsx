@@ -16,6 +16,7 @@ type WritingTextProps = {
   stiffness?: number
   damping?: number
   wordSpacing?: number
+  segmentGap?: number
   triggerOnScroll?: boolean
 }
 
@@ -28,6 +29,7 @@ function WritingText({
   stiffness = 100,
   damping = 15,
   wordSpacing = 0.25,
+  segmentGap,
   triggerOnScroll = false,
 }: WritingTextProps) {
   const ref = useRef<HTMLSpanElement>(null)
@@ -35,13 +37,14 @@ function WritingText({
 
   const shouldAnimate = triggerOnScroll ? isInView : true
 
-  // Build a flat list of words with per-word className
-  const words: { word: string; className?: string }[] = []
+  // Build a flat list of words; mark the last word of each segment so we can add inter-segment spacing
+  const words: { word: string; className?: string; isSegmentEnd?: boolean }[] = []
   if (segments) {
     for (const seg of segments) {
-      for (const w of seg.text.split(" ")) {
-        if (w) words.push({ word: w, className: seg.className })
-      }
+      const segWords = seg.text.split(" ").filter(Boolean)
+      segWords.forEach((w, idx) => {
+        words.push({ word: w, className: seg.className, isSegmentEnd: idx === segWords.length - 1 })
+      })
     }
   } else if (text) {
     for (const w of text.split(" ")) {
@@ -51,13 +54,21 @@ function WritingText({
 
   return (
     <span ref={ref} className={className} style={{ display: "inline-flex", flexWrap: "wrap", ...style }}>
-      {words.map((entry, i) => (
+      {words.map((entry, i) => {
+        const isLast = i === words.length - 1
+        const useSegmentGap = !isLast && entry.isSegmentEnd && segmentGap != null
+        const marginRight = isLast
+          ? 0
+          : useSegmentGap
+            ? `${segmentGap}em`
+            : `${wordSpacing}em`
+        return (
         <span
           key={i}
           className={entry.className}
           style={{
             display: "inline-block",
-            marginRight: i < words.length - 1 ? `${wordSpacing}em` : 0,
+            marginRight,
             overflow: "hidden",
           }}
         >
@@ -75,7 +86,8 @@ function WritingText({
             {entry.word}
           </motion.span>
         </span>
-      ))}
+        )
+      })}
     </span>
   )
 }

@@ -9,11 +9,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Check, Copy, Download } from 'lucide-react'
 
+type ExportComponent = {
+  fileName: string
+  source: string
+  label?: string
+}
+
 type ExportDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  componentSource: string
   installCommand: string
+  /** Multiple components — renders one tab per component plus a Setup tab */
+  components?: ExportComponent[]
+  /** Legacy single-component API (kept for other detail pages) */
+  componentSource?: string
   fileName?: string
   fontInstructions?: string
   fontDownloadUrl?: string
@@ -58,6 +67,7 @@ function CopyButton({ text }: { text: string }) {
 export function ExportDialog({
   open,
   onOpenChange,
+  components,
   componentSource,
   installCommand,
   fileName = "text-hover-effect.tsx",
@@ -69,6 +79,14 @@ export function ExportDialog({
   setupNotes,
   setupNotesLabel = 'Additional Setup',
 }: ExportDialogProps) {
+  const resolvedComponents: ExportComponent[] =
+    components && components.length > 0
+      ? components
+      : [{ fileName, source: componentSource ?? '', label: 'Component' }]
+
+  const tabValueFor = (c: ExportComponent, idx: number) => `component-${idx}-${c.fileName}`
+  const defaultTab = tabValueFor(resolvedComponents[0], 0)
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col">
@@ -76,23 +94,29 @@ export function ExportDialog({
           <DialogTitle className="text-base font-extrabold">Export Component</DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="component" className="flex-1 min-h-0">
+        <Tabs defaultValue={defaultTab} className="flex-1 min-h-0">
           <TabsList>
-            <TabsTrigger value="component">Component</TabsTrigger>
+            {resolvedComponents.map((c, idx) => (
+              <TabsTrigger key={tabValueFor(c, idx)} value={tabValueFor(c, idx)}>
+                {c.label ?? c.fileName}
+              </TabsTrigger>
+            ))}
             <TabsTrigger value="setup">Setup</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="component" className="min-h-0">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-text-secondary font-light">{fileName}</span>
-              <CopyButton text={componentSource} />
-            </div>
-            <div className="rounded-lg border border-border bg-[#fafafa] overflow-auto max-h-[50vh]">
-              <pre className="p-4 text-[13px] leading-relaxed">
-                <code>{componentSource}</code>
-              </pre>
-            </div>
-          </TabsContent>
+          {resolvedComponents.map((c, idx) => (
+            <TabsContent key={tabValueFor(c, idx)} value={tabValueFor(c, idx)} className="min-h-0">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-text-secondary font-light">{c.fileName}</span>
+                <CopyButton text={c.source} />
+              </div>
+              <div className="rounded-lg border border-border bg-[#fafafa] overflow-auto max-h-[50vh]">
+                <pre className="p-4 text-[13px] leading-relaxed">
+                  <code>{c.source}</code>
+                </pre>
+              </div>
+            </TabsContent>
+          ))}
 
           <TabsContent value="setup" className="min-h-0 space-y-4">
             <div>
