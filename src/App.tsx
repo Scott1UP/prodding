@@ -12,6 +12,7 @@ import ScrollingNarrativeDetail from './pages/ScrollingNarrativeDetail'
 import WalletPassDesignerDetail from './pages/WalletPassDesignerDetail'
 import AnimatedGradientBorderDetail from './pages/AnimatedGradientBorderDetail'
 import RotatingSpeakersDetail from './pages/RotatingSpeakersDetail'
+import SocialsDetail from './pages/SocialsDetail'
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="experiments/wallet-pass-designer" element={<WalletPassDesignerDetail />} />
         <Route path="experiments/animated-gradient-border" element={<AnimatedGradientBorderDetail />} />
         <Route path="experiments/rotating-speakers" element={<RotatingSpeakersDetail />} />
+        <Route path="experiments/socials" element={<SocialsDetail />} />
       </Route>
     </Routes>
   )
