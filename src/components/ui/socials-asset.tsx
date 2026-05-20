@@ -43,7 +43,7 @@ export const HEADLINE_DEFAULTS = {
   innerShadowOffset: 1.5,
   innerShadowColor: '#662E00',
   innerShadowOpacity: 0.4,
-} as const
+}
 
 const PILL_BG = '#8048EF'
 const HEADLINE_GRADIENT_ONE_ID = 'socials-headline-gradient-1'

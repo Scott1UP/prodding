@@ -72,7 +72,7 @@ export default function SocialsDetail() {
         height: ASSET_HEIGHT,
         pixelRatio: 1,
         cacheBust: true,
-        quality: 0.95,
+        quality: 1,
         backgroundColor: '#1A1040',
       })
       const a = document.createElement('a')
