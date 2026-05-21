@@ -23,11 +23,6 @@ const experiments = [
     name: 'Rotating Speakers',
     description: 'Speaker portraits orbiting in concentric elliptical rings with hover-pause and click-to-reveal.',
   },
-  {
-    slug: 'socials',
-    name: 'Social Asset Generator',
-    description: 'A social asset generator test for Devcon — customize headline and subtitle, export a 1920×1080 JPEG.',
-  },
 ]
 
 export default function Experiments() {
@@ -125,16 +120,6 @@ export default function Experiments() {
               <div className="h-48 overflow-hidden border-b border-border-subtle relative">
                 <img
                   src="/imgs/rotating-speakers-thumb.png"
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-
-            {exp.slug === 'socials' && (
-              <div className="h-48 overflow-hidden border-b border-border-subtle relative">
-                <img
-                  src="/imgs/socials-thumb.jpg"
                   alt=""
                   className="w-full h-full object-cover"
                 />

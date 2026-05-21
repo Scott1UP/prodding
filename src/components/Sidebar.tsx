@@ -2,12 +2,13 @@ import { NavLink } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
-import { Type, Layers, Play, FlaskConical } from 'lucide-react'
+import { Type, Layers, Play, FlaskConical, Share2 } from 'lucide-react'
 
 const navItems = [
   { to: '/', label: 'Text Effects', icon: Type },
   { to: '/backgrounds', label: 'Backgrounds', icon: Layers },
   { to: '/lottie-files', label: 'Lottie Files', icon: Play },
+  { to: '/socials', label: 'Socials', icon: Share2 },
   { to: '/experiments', label: 'Experiments', icon: FlaskConical },
 ]
 

@@ -21,6 +21,26 @@ const LINE_GAP_RANGE = 30
 const LINE_GAP_MIN = HEADLINE_DEFAULTS.lineGap - LINE_GAP_RANGE / 2
 const LINE_GAP_MAX = HEADLINE_DEFAULTS.lineGap + LINE_GAP_RANGE / 2
 
+const ACCENT = '#7235ED'
+const ACCENT_HOVER = '#5F26D4'
+
+// Scoped overrides for the shared <Slider> on this page: purple range, purple
+// thumb border, and a tall rectangular thumb instead of a circle.
+const SLIDER_CLASS =
+  '[&_[data-slot=slider-range]]:bg-[#7235ED] ' +
+  '[&_[data-slot=slider-thumb]]:border-[#7235ED] ' +
+  '[&_[data-slot=slider-thumb]]:rounded-sm ' +
+  '[&_[data-slot=slider-thumb]]:!h-5 ' +
+  '[&_[data-slot=slider-thumb]]:!w-2 ' +
+  '[&_[data-slot=slider-thumb]]:cursor-grab ' +
+  '[&_[data-slot=slider-thumb]]:active:cursor-grabbing ' +
+  '[&_[data-slot=slider-thumb]]:hover:ring-0 ' +
+  '[&_[data-slot=slider-thumb]]:focus-visible:ring-0 ' +
+  '[&_[data-slot=slider-thumb]]:focus-visible:outline-none'
+
+const accentCtaClass =
+  'text-sm font-bold text-[#7235ED] hover:text-[#5F26D4] cursor-pointer transition-colors'
+
 export default function SocialsDetail() {
   const navigate = useNavigate()
 
@@ -99,31 +119,17 @@ export default function SocialsDetail() {
         <Button
           variant="ghost"
           size="sm"
-          className="mb-3 -ml-2 text-text-secondary hover:text-text-primary gap-2 text-base"
-          onClick={() => navigate('/experiments')}
+          className={`mb-3 -ml-2 gap-2 hover:bg-[#7235ED]/10 ${accentCtaClass}`}
+          onClick={() => navigate('/socials')}
         >
-          <ArrowLeft size={16} strokeWidth={1.5} />
+          <ArrowLeft size={16} strokeWidth={2} />
           Back
         </Button>
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-extrabold text-text-primary tracking-tight">
-            Social Asset Generator
-          </h1>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2 text-base"
-            onClick={handleDownload}
-            disabled={downloading}
-          >
-            <Download size={16} strokeWidth={1.5} />
-            {downloading ? 'Rendering…' : 'Download JPEG'}
-          </Button>
-        </div>
-        <p className="mt-3 text-text-secondary text-base font-light leading-relaxed max-w-2xl">
-          A social asset generator test for the Devcon team. Add one or two
-          headline texts, and an optional pill element — Download a 1920×1080
-          jpeg ready to post.
+        <h1 className="text-3xl font-extrabold text-text-primary tracking-tight">
+          Asset Generator
+        </h1>
+        <p className="mt-3 text-text-secondary text-base font-light whitespace-nowrap">
+          Add one or two headline texts, plus an optional pill — download a 1920×1080 JPEG.
         </p>
       </header>
 
@@ -169,15 +175,33 @@ export default function SocialsDetail() {
           <h2 className="text-xl font-extrabold text-text-primary tracking-tight">
             Customize
           </h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-2 text-sm text-text-secondary"
-            onClick={resetStyle}
-          >
-            <RotateCcw size={14} strokeWidth={1.5} />
-            Reset sizes
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="lg"
+              className={`gap-2 rounded-full hover:bg-[#7235ED]/10 ${accentCtaClass} hover:scale-[1.03] active:scale-[0.97] transition-[scale,color,background-color] duration-200 ease-out`}
+              onClick={resetStyle}
+            >
+              <RotateCcw size={14} strokeWidth={2} />
+              Reset sizes
+            </Button>
+            <button
+              type="button"
+              onClick={handleDownload}
+              disabled={downloading}
+              style={{ backgroundColor: ACCENT }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = ACCENT_HOVER)
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = ACCENT)
+              }
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-full text-sm font-bold text-white cursor-pointer transition-[scale,background-color,color] duration-200 ease-out hover:scale-[1.03] active:scale-[0.97] disabled:opacity-60 disabled:pointer-events-none"
+            >
+              <Download size={14} strokeWidth={2.25} />
+              {downloading ? 'Rendering…' : 'Download JPEG'}
+            </button>
+          </div>
         </div>
 
         <div className="flex gap-4 items-end">
@@ -213,7 +237,7 @@ export default function SocialsDetail() {
               <button
                 type="button"
                 onClick={() => setShowLineTwo((v) => !v)}
-                className="text-xs text-text-primary font-light underline underline-offset-2"
+                className={`${accentCtaClass} hover:underline underline-offset-2`}
               >
                 {showLineTwo ? 'Hide' : 'Show'}
               </button>
@@ -234,7 +258,7 @@ export default function SocialsDetail() {
               <button
                 type="button"
                 onClick={() => setShowPill((v) => !v)}
-                className="text-xs text-text-primary font-light underline underline-offset-2"
+                className={`${accentCtaClass} hover:underline underline-offset-2`}
               >
                 {showPill ? 'Hide' : 'Show'}
               </button>
@@ -245,7 +269,7 @@ export default function SocialsDetail() {
               onChange={(e) => setPillText(e.target.value)}
               placeholder="Early Bird payment via ETH only • Limited quantity"
               disabled={!showPill}
-              className="text-base bg-white"
+              className="text-base bg-white hover:border-text-tertiary focus-visible:border-input focus-visible:ring-0"
             />
           </FieldColumn>
         </div>
@@ -289,9 +313,6 @@ function FieldHeader({
   )
 }
 
-// Composite control: a standard-looking input field with a compact size
-// slider tucked into the right edge, so the input and its size control
-// read as a single field on one line.
 interface InputWithSizeSliderProps {
   id: string
   value: string
@@ -313,7 +334,7 @@ function InputWithSizeSlider({
 }: InputWithSizeSliderProps) {
   return (
     <div
-      className={`h-9 w-full min-w-0 rounded-md border border-input bg-white shadow-xs flex items-center transition-[color,box-shadow] focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px] ${disabled ? 'opacity-50' : ''}`}
+      className={`h-9 w-full min-w-0 rounded-md border border-input bg-white shadow-xs flex items-center transition-colors hover:border-text-tertiary ${disabled ? 'opacity-50' : ''}`}
     >
       <input
         id={id}
@@ -336,14 +357,13 @@ function InputWithSizeSlider({
           max={SIZE_MAX}
           step={1}
           disabled={disabled}
+          className={SLIDER_CLASS}
         />
       </div>
     </div>
   )
 }
 
-// A bare slider wrapped in input-style chrome so it matches the height
-// and visual weight of the Headline 1/2/Pill inputs.
 interface SliderInBoxProps {
   value: number
   onChange: (v: number) => void
@@ -354,13 +374,14 @@ interface SliderInBoxProps {
 
 function SliderInBox({ value, onChange, min, max, step }: SliderInBoxProps) {
   return (
-    <div className="h-9 w-full min-w-0 rounded-md border border-input bg-white shadow-xs flex items-center px-3">
+    <div className="h-9 w-full min-w-0 rounded-md border border-input bg-white shadow-xs flex items-center px-3 transition-colors hover:border-text-tertiary">
       <Slider
         value={[value]}
         onValueChange={([v]) => onChange(v)}
         min={min}
         max={max}
         step={step}
+        className={SLIDER_CLASS}
       />
     </div>
   )
