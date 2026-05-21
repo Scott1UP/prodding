@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { toJpeg } from 'html-to-image'
+import { getFontEmbedCSS, toJpeg } from 'html-to-image'
 import { ArrowLeft, Download, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -67,6 +67,12 @@ export default function SocialsDetail() {
     if (!assetRef.current) return
     setDownloading(true)
     try {
+      // Browsers lazy-load Google Font weights; force-load the pill's 800
+      // weight before serializing so it's available to the SVG rasterizer.
+      await document.fonts.load(`800 32px "Poppins"`, pillText || ' ')
+      await document.fonts.ready
+
+      const fontEmbedCSS = await getFontEmbedCSS(assetRef.current)
       const dataUrl = await toJpeg(assetRef.current, {
         width: ASSET_WIDTH,
         height: ASSET_HEIGHT,
@@ -74,6 +80,7 @@ export default function SocialsDetail() {
         cacheBust: true,
         quality: 1,
         backgroundColor: '#1A1040',
+        fontEmbedCSS,
       })
       const a = document.createElement('a')
       a.href = dataUrl
