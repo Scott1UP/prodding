@@ -51,6 +51,18 @@
   font-display: swap;
 }
 
+/* Self-hosted so html-to-image can inline it during JPEG export.
+   Google Fonts still serves the other Poppins weights via the <link>
+   in index.html — this rule wins for weight 800 because same-origin
+   sources sort ahead of fallbacks. */
+@font-face {
+  font-family: "Poppins";
+  src: url("/fonts/Poppins-ExtraBold.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   html {
     font-size: 16px;
