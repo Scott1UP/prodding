@@ -1,34 +1,30 @@
-import { forwardRef } from 'react'
+import { forwardRef, useMemo } from 'react'
 
-export interface SocialsAssetProps {
-  lineOne: string
-  lineTwo?: string
-  showLineTwo: boolean
-  pillText: string
-  showPill: boolean
+export type FormatKey = 'landscape' | 'portrait' | 'vertical'
 
-  // Headline style — all optional; defaults below match the current "good" look
-  fontSizeOne?: number
-  fontSizeTwo?: number
-  borderWidth?: number
-  borderColor?: string
-  highlightWidth?: number
-  highlightColor?: string
-  gradientTop?: string
-  gradientBottom?: string
-  shadowDepth?: number
-  shadowColor?: string
-  curveAmount?: number
-  lineGap?: number
-  letterSpacing?: number
-  innerShadowOffset?: number
-  innerShadowColor?: string
-  innerShadowOpacity?: number
+export interface HeadlineStyle {
+  fontSizeOne: number
+  fontSizeTwo: number
+  borderWidth: number
+  borderColor: string
+  highlightWidth: number
+  highlightColor: string
+  gradientTop: string
+  gradientBottom: string
+  shadowDepth: number
+  shadowColor: string
+  curveAmount: number
+  lineGap: number
+  letterSpacing: number
+  innerShadowOffset: number
+  innerShadowColor: string
+  innerShadowOpacity: number
 }
 
-export const HEADLINE_DEFAULTS = {
-  fontSizeOne: 186,
-  fontSizeTwo: 158,
+const SHARED_HEADLINE_STYLE: Omit<
+  HeadlineStyle,
+  'fontSizeOne' | 'fontSizeTwo' | 'curveAmount' | 'lineGap'
+> = {
   borderWidth: 10,
   borderColor: '#AD1E10',
   highlightWidth: 3,
@@ -37,19 +33,189 @@ export const HEADLINE_DEFAULTS = {
   gradientBottom: '#FDF4CE',
   shadowDepth: 6,
   shadowColor: '#621109',
-  curveAmount: 100,
-  lineGap: 168,
   letterSpacing: -1,
   innerShadowOffset: 1.5,
   innerShadowColor: '#662E00',
   innerShadowOpacity: 0.4,
 }
 
+export interface PillStyle {
+  bottom: number
+  fontSize: number
+  paddingX: number
+  paddingY: number
+  allowWrap: boolean
+  maxWidth: number
+}
+
+export interface FormatConfig {
+  key: FormatKey
+  label: string
+  fileSuffix: string
+  width: number
+  height: number
+  bgArt: string
+  logoTop: number
+  logoHeight: number
+  arcMargin: number
+  // Y coordinate the headline block visually centers on. The baseline of
+  // line 1 is computed at render-time from this center plus the actual
+  // number of visual lines (1, 2, or N after wrap), so the block stays
+  // centered regardless of whether headline 2 is shown / how it wraps.
+  headlineCenterY: number
+  pill: PillStyle
+  headline: HeadlineStyle
+  // Per-format slider ranges. Headline 1 and headline 2 get independent ranges
+  // since they typically want different size envelopes per format.
+  sizeOneMin: number
+  sizeOneMax: number
+  sizeTwoMin: number
+  sizeTwoMax: number
+  lineGapMin: number
+  lineGapMax: number
+  // Manual vertical shift applied on top of headlineCenterY. The slider
+  // value is added directly to the center coordinate (px in canvas space).
+  centerYOffsetMin: number
+  centerYOffsetMax: number
+  // Narrow formats wrap headline 2 to fit. Landscape renders headline 2 as a
+  // single arc to preserve current behavior.
+  wrapHeadlineTwo: boolean
+}
+
+export const FORMATS: Record<FormatKey, FormatConfig> = {
+  landscape: {
+    key: 'landscape',
+    label: 'X Landscape',
+    fileSuffix: '1920x1080',
+    width: 1920,
+    height: 1080,
+    bgArt: '/socials/base-art.jpg',
+    logoTop: 70,
+    logoHeight: 220,
+    arcMargin: 80,
+    headlineCenterY: 555,
+    pill: {
+      bottom: 80,
+      fontSize: 32,
+      paddingX: 40,
+      paddingY: 24,
+      allowWrap: false,
+      maxWidth: 1680,
+    },
+    headline: {
+      ...SHARED_HEADLINE_STYLE,
+      fontSizeOne: 186,
+      fontSizeTwo: 158,
+      curveAmount: 100,
+      lineGap: 168,
+    },
+    sizeOneMin: 140,
+    sizeOneMax: 220,
+    sizeTwoMin: 120,
+    sizeTwoMax: 200,
+    lineGapMin: 140,
+    lineGapMax: 200,
+    centerYOffsetMin: -150,
+    centerYOffsetMax: 150,
+    wrapHeadlineTwo: false,
+  },
+  portrait: {
+    key: 'portrait',
+    label: 'IG Portrait',
+    fileSuffix: '1080x1350',
+    width: 1080,
+    height: 1350,
+    bgArt: '/socials/base-art-1080x1350.jpg',
+    logoTop: 90,
+    logoHeight: 255,
+    arcMargin: 40,
+    headlineCenterY: 739,
+    pill: {
+      bottom: 120,
+      fontSize: 38,
+      paddingX: 42,
+      paddingY: 24,
+      allowWrap: true,
+      maxWidth: 880,
+    },
+    headline: {
+      ...SHARED_HEADLINE_STYLE,
+      fontSizeOne: 156,
+      fontSizeTwo: 128,
+      curveAmount: 40,
+      lineGap: 170,
+      borderWidth: 10,
+      highlightWidth: 3,
+      shadowDepth: 6,
+    },
+    sizeOneMin: 110,
+    sizeOneMax: 240,
+    sizeTwoMin: 90,
+    sizeTwoMax: 220,
+    lineGapMin: 130,
+    lineGapMax: 240,
+    centerYOffsetMin: -200,
+    centerYOffsetMax: 200,
+    wrapHeadlineTwo: true,
+  },
+  vertical: {
+    key: 'vertical',
+    label: 'IG Vertical',
+    fileSuffix: '1080x1920',
+    width: 1080,
+    height: 1920,
+    bgArt: '/socials/base-art-1080x1920.jpg',
+    logoTop: 220,
+    logoHeight: 380,
+    arcMargin: 40,
+    headlineCenterY: 1140,
+    pill: {
+      bottom: 120,
+      fontSize: 46,
+      paddingX: 48,
+      paddingY: 28,
+      allowWrap: true,
+      maxWidth: 880,
+    },
+    headline: {
+      ...SHARED_HEADLINE_STYLE,
+      fontSizeOne: 150,
+      fontSizeTwo: 124,
+      curveAmount: 40,
+      lineGap: 150,
+      borderWidth: 10,
+      highlightWidth: 3,
+      shadowDepth: 6,
+    },
+    sizeOneMin: 110,
+    sizeOneMax: 240,
+    sizeTwoMin: 90,
+    sizeTwoMax: 220,
+    lineGapMin: 120,
+    lineGapMax: 190,
+    centerYOffsetMin: -300,
+    centerYOffsetMax: 300,
+    wrapHeadlineTwo: true,
+  },
+}
+
+export interface SocialsAssetProps {
+  format: FormatKey
+  lineOne: string
+  lineTwo?: string
+  showLineTwo: boolean
+  pillText: string
+  showPill: boolean
+
+  // Optional per-instance overrides — fall back to FORMATS[format].headline.
+  fontSizeOne?: number
+  fontSizeTwo?: number
+  lineGap?: number
+  curveAmount?: number
+  centerYOffset?: number
+}
+
 const PILL_BG = '#8048EF'
-const HEADLINE_GRADIENT_ONE_ID = 'socials-headline-gradient-1'
-const HEADLINE_GRADIENT_TWO_ID = 'socials-headline-gradient-2'
-const HEADLINE_HALO_ID = 'socials-headline-halo'
-const HEADLINE_INNER_SHADOW_ID = 'socials-headline-inner-shadow'
 
 // Approximate vertical extents of a glyph relative to its baseline, used
 // to anchor the gradient stops in user space so the gradient spans the
@@ -66,66 +232,141 @@ function buildShadowChain(depth: number, color: string) {
   return stops.join(' ') || 'none'
 }
 
+// Greedy whitespace-split fit. Uses canvas measureText so widths reflect the
+// actual rendered font; falls back to a character-count heuristic if canvas
+// isn't available (e.g. SSR — not a concern here, but cheap to guard).
+function wrapTextToWidth(
+  text: string,
+  maxWidth: number,
+  fontSize: number,
+  letterSpacing: number,
+): string[] {
+  const trimmed = text.trim()
+  if (!trimmed) return []
+  const words = trimmed.split(/\s+/)
+  const ctx =
+    typeof document !== 'undefined'
+      ? document.createElement('canvas').getContext('2d')
+      : null
+  const measure = (s: string) => {
+    if (ctx) {
+      ctx.font = `${fontSize}px Chloe, "Poppins", sans-serif`
+      return ctx.measureText(s).width + letterSpacing * Math.max(0, s.length - 1)
+    }
+    return s.length * fontSize * 0.55
+  }
+  const lines: string[] = []
+  let current = ''
+  for (const word of words) {
+    const test = current ? `${current} ${word}` : word
+    if (measure(test) <= maxWidth) {
+      current = test
+    } else {
+      if (current) lines.push(current)
+      current = word
+    }
+  }
+  if (current) lines.push(current)
+  return lines
+}
+
 export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
   function SocialsAsset(
     {
+      format,
       lineOne,
       lineTwo,
       showLineTwo,
       pillText,
       showPill,
-      fontSizeOne = HEADLINE_DEFAULTS.fontSizeOne,
-      fontSizeTwo = HEADLINE_DEFAULTS.fontSizeTwo,
-      borderWidth = HEADLINE_DEFAULTS.borderWidth,
-      borderColor = HEADLINE_DEFAULTS.borderColor,
-      highlightWidth = HEADLINE_DEFAULTS.highlightWidth,
-      highlightColor = HEADLINE_DEFAULTS.highlightColor,
-      gradientTop = HEADLINE_DEFAULTS.gradientTop,
-      gradientBottom = HEADLINE_DEFAULTS.gradientBottom,
-      shadowDepth = HEADLINE_DEFAULTS.shadowDepth,
-      shadowColor = HEADLINE_DEFAULTS.shadowColor,
-      curveAmount = HEADLINE_DEFAULTS.curveAmount,
-      lineGap = HEADLINE_DEFAULTS.lineGap,
-      letterSpacing = HEADLINE_DEFAULTS.letterSpacing,
-      innerShadowOffset = HEADLINE_DEFAULTS.innerShadowOffset,
-      innerShadowColor = HEADLINE_DEFAULTS.innerShadowColor,
-      innerShadowOpacity = HEADLINE_DEFAULTS.innerShadowOpacity,
+      fontSizeOne,
+      fontSizeTwo,
+      lineGap,
+      curveAmount,
+      centerYOffset,
     },
     ref,
   ) {
-    const twoLines = showLineTwo && !!lineTwo?.trim()
+    const cfg = FORMATS[format]
+    const h = cfg.headline
 
-    // Arc geometry: vertically centered between logo (~y=282) and pill (~y=920)
-    const baselineY = twoLines ? 510 : 640
-    const arc1 = `M 80 ${baselineY} Q 960 ${baselineY - curveAmount} 1840 ${baselineY}`
-    const arc2 = twoLines
-      ? `M 100 ${baselineY + lineGap} Q 960 ${baselineY + lineGap - curveAmount} 1820 ${baselineY + lineGap}`
-      : null
+    // Scope SVG IDs per format so multiple instances on one page (e.g. visible
+    // preview + hidden export nodes) don't collide on shared filter/gradient IDs.
+    const idPrefix = `socials-${format}`
+    const gradientIdBase = `${idPrefix}-gradient`
+    const haloId = `${idPrefix}-halo`
+    const innerShadowId = `${idPrefix}-inner-shadow`
+    const sizeOne = fontSizeOne ?? h.fontSizeOne
+    const sizeTwo = fontSizeTwo ?? h.fontSizeTwo
+    const gap = lineGap ?? h.lineGap
+    const curve = curveAmount ?? h.curveAmount
+    const yOffset = centerYOffset ?? 0
 
-    // Per-line gradient ranges in user space — pinned to each line's
-    // own letter height so the gradient looks identical regardless of
-    // whether one or two lines are visible.
-    const gradOneTopY = baselineY - fontSizeOne * CAP_HEIGHT_RATIO
-    const gradOneBottomY = baselineY + fontSizeOne * DESCENDER_RATIO
-    const baselineYTwo = baselineY + lineGap
-    const gradTwoTopY = baselineYTwo - fontSizeTwo * CAP_HEIGHT_RATIO
-    const gradTwoBottomY = baselineYTwo + fontSizeTwo * DESCENDER_RATIO
+    const { width, height, arcMargin } = cfg
+    const arcLeft = arcMargin
+    const arcRight = width - arcMargin
+    const arcCenter = width / 2
 
-    const shadowChain = buildShadowChain(shadowDepth, shadowColor)
+    const hasLineTwo = showLineTwo && !!lineTwo?.trim()
+
+    // For narrow formats, wrap headline 2 into multiple visible lines.
+    const lineTwoChunks = useMemo(() => {
+      if (!hasLineTwo) return []
+      if (!cfg.wrapHeadlineTwo) return [lineTwo!.trim()]
+      return wrapTextToWidth(
+        lineTwo!,
+        width - 2 * arcMargin,
+        sizeTwo,
+        h.letterSpacing,
+      )
+    }, [hasLineTwo, lineTwo, cfg.wrapHeadlineTwo, width, arcMargin, sizeTwo, h.letterSpacing])
+
+    // Visual-line count: line 1 always + N chunks of line 2 after wrap.
+    // Baseline of line 1 is derived so the block's geometric center sits at
+    // cfg.headlineCenterY, no matter how many visual lines are rendered.
+    const visualLineCount = 1 + lineTwoChunks.length
+    const capH = sizeOne * CAP_HEIGHT_RATIO
+    const descender =
+      (visualLineCount === 1 ? sizeOne : sizeTwo) * DESCENDER_RATIO
+    const blockHeight =
+      capH + Math.max(0, visualLineCount - 1) * gap + descender
+    const baselineY = cfg.headlineCenterY + yOffset - blockHeight / 2 + capH
+
+    // Arc geometry: line 1 spans the full arc width, line 2 (and wrap chunks)
+    // sit slightly narrower to mimic the original landscape look.
+    const arcOnePath = `M ${arcLeft} ${baselineY} Q ${arcCenter} ${baselineY - curve} ${arcRight} ${baselineY}`
+
+    const lineTwoArcs = lineTwoChunks.map((chunk, i) => {
+      const y = baselineY + gap * (i + 1)
+      const inset = 20 // pinch line 2 family slightly like the original
+      return {
+        id: `${idPrefix}-arc-two-${i}`,
+        path: `M ${arcLeft + inset} ${y} Q ${arcCenter} ${y - curve} ${arcRight - inset} ${y}`,
+        y,
+        text: chunk,
+      }
+    })
+
+    const shadowChain = buildShadowChain(h.shadowDepth, h.shadowColor)
+
+    // Per-line gradients in user space, pinned to each line's own letter
+    // height so the gradient looks consistent across line counts.
+    const gradOneTopY = baselineY - sizeOne * CAP_HEIGHT_RATIO
+    const gradOneBottomY = baselineY + sizeOne * DESCENDER_RATIO
 
     return (
       <div
         ref={ref}
         style={{
           position: 'relative',
-          width: 1920,
-          height: 1080,
+          width,
+          height,
           overflow: 'hidden',
           backgroundColor: '#1A1040',
         }}
       >
         <img
-          src="/socials/base-art.jpg"
+          src={cfg.bgArt}
           alt=""
           style={{
             position: 'absolute',
@@ -142,59 +383,62 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
           alt=""
           style={{
             position: 'absolute',
-            top: 70,
+            top: cfg.logoTop,
             left: '50%',
             transform: 'translateX(-50%)',
             width: 'auto',
-            height: 220,
+            height: cfg.logoHeight,
             display: 'block',
           }}
         />
 
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 1920 1080"
-          width="1920"
-          height="1080"
+          viewBox={`0 0 ${width} ${height}`}
+          width={width}
+          height={height}
           style={{ position: 'absolute', inset: 0 }}
         >
           <defs>
             <linearGradient
-              id={HEADLINE_GRADIENT_ONE_ID}
+              id={`${gradientIdBase}-1`}
               gradientUnits="userSpaceOnUse"
               x1="0"
               y1={gradOneTopY}
               x2="0"
               y2={gradOneBottomY}
             >
-              <stop offset="0%" stopColor={gradientTop} />
-              <stop offset="100%" stopColor={gradientBottom} />
+              <stop offset="0%" stopColor={h.gradientTop} />
+              <stop offset="100%" stopColor={h.gradientBottom} />
             </linearGradient>
-            {arc2 && (
-              <linearGradient
-                id={HEADLINE_GRADIENT_TWO_ID}
-                gradientUnits="userSpaceOnUse"
-                x1="0"
-                y1={gradTwoTopY}
-                x2="0"
-                y2={gradTwoBottomY}
-              >
-                <stop offset="0%" stopColor={gradientTop} />
-                <stop offset="100%" stopColor={gradientBottom} />
-              </linearGradient>
-            )}
-            <path id="socials-arc-1" d={arc1} fill="none" />
-            {arc2 && <path id="socials-arc-2" d={arc2} fill="none" />}
+            {lineTwoArcs.map((arc, i) => {
+              const top = arc.y - sizeTwo * CAP_HEIGHT_RATIO
+              const bottom = arc.y + sizeTwo * DESCENDER_RATIO
+              return (
+                <linearGradient
+                  key={`grad-two-${i}`}
+                  id={`${gradientIdBase}-two-${i}`}
+                  gradientUnits="userSpaceOnUse"
+                  x1="0"
+                  y1={top}
+                  x2="0"
+                  y2={bottom}
+                >
+                  <stop offset="0%" stopColor={h.gradientTop} />
+                  <stop offset="100%" stopColor={h.gradientBottom} />
+                </linearGradient>
+              )
+            })}
 
-            {/*
-              Halo filter — emits ONLY the three-stop glow generated from
-              the source's alpha, not the source itself (feMerge omits
-              SourceGraphic). Lets us paint a soft cyan/cream halo behind
-              the visible text layers without washing out their colors.
-              stdDeviation ≈ CSS box-shadow blur / 2.
-            */}
+            <path id={`${idPrefix}-arc-one`} d={arcOnePath} fill="none" />
+            {lineTwoArcs.map((arc) => (
+              <path key={arc.id} id={arc.id} d={arc.path} fill="none" />
+            ))}
+
+            {/* Halo filter — emits ONLY the three-stop glow generated from
+                the source's alpha, not the source itself. */}
             <filter
-              id={HEADLINE_HALO_ID}
+              id={haloId}
               x="-50%"
               y="-400%"
               width="200%"
@@ -219,15 +463,10 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
               </feMerge>
             </filter>
 
-            {/*
-              Inner shadow filter — paints a soft colored rim along the
-              edges of the source OPPOSITE the offset direction (i.e. an
-              inset shadow). Recipe: offset the alpha, subtract from the
-              original alpha to get a one-sided rim, color it, then merge
-              with the original source.
-            */}
+            {/* Inner shadow filter — paints a soft colored rim along the
+                edges OPPOSITE the offset direction (inset shadow). */}
             <filter
-              id={HEADLINE_INNER_SHADOW_ID}
+              id={innerShadowId}
               x="-5%"
               y="-5%"
               width="110%"
@@ -235,8 +474,8 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
             >
               <feOffset
                 in="SourceAlpha"
-                dx={innerShadowOffset}
-                dy={innerShadowOffset}
+                dx={h.innerShadowOffset}
+                dy={h.innerShadowOffset}
                 result="offset"
               />
               <feComposite
@@ -246,8 +485,8 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
                 result="rim"
               />
               <feFlood
-                floodColor={innerShadowColor}
-                floodOpacity={innerShadowOpacity}
+                floodColor={h.innerShadowColor}
+                floodOpacity={h.innerShadowOpacity}
                 result="color"
               />
               <feComposite
@@ -264,31 +503,36 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
           </defs>
 
           <CurvedHeadline
-            pathId="socials-arc-1"
-            gradientId={HEADLINE_GRADIENT_ONE_ID}
+            pathId={`${idPrefix}-arc-one`}
+            gradientId={`${gradientIdBase}-1`}
+            haloId={haloId}
+            innerShadowId={innerShadowId}
             text={lineOne}
-            fontSize={fontSizeOne}
-            borderWidth={borderWidth}
-            borderColor={borderColor}
-            highlightWidth={highlightWidth}
-            highlightColor={highlightColor}
+            fontSize={sizeOne}
+            borderWidth={h.borderWidth}
+            borderColor={h.borderColor}
+            highlightWidth={h.highlightWidth}
+            highlightColor={h.highlightColor}
             shadowChain={shadowChain}
-            letterSpacing={letterSpacing}
+            letterSpacing={h.letterSpacing}
           />
-          {arc2 && (
+          {lineTwoArcs.map((arc, i) => (
             <CurvedHeadline
-              pathId="socials-arc-2"
-              gradientId={HEADLINE_GRADIENT_TWO_ID}
-              text={lineTwo ?? ''}
-              fontSize={fontSizeTwo}
-              borderWidth={borderWidth}
-              borderColor={borderColor}
-              highlightWidth={highlightWidth}
-              highlightColor={highlightColor}
+              key={arc.id}
+              pathId={arc.id}
+              gradientId={`${gradientIdBase}-two-${i}`}
+              haloId={haloId}
+              innerShadowId={innerShadowId}
+              text={arc.text}
+              fontSize={sizeTwo}
+              borderWidth={h.borderWidth}
+              borderColor={h.borderColor}
+              highlightWidth={h.highlightWidth}
+              highlightColor={h.highlightColor}
               shadowChain={shadowChain}
-              letterSpacing={letterSpacing}
+              letterSpacing={h.letterSpacing}
             />
-          )}
+          ))}
         </svg>
 
         {showPill && !!pillText.trim() && (
@@ -296,17 +540,27 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
             style={{
               position: 'absolute',
               left: '50%',
-              bottom: 80,
+              bottom: cfg.pill.bottom,
               transform: 'translateX(-50%)',
               backgroundColor: PILL_BG,
               color: '#ffffff',
               fontFamily: '"Poppins", sans-serif',
               fontWeight: 800,
-              fontSize: 32,
-              lineHeight: 1,
-              padding: '24px 40px',
+              fontSize: cfg.pill.fontSize,
+              lineHeight: 1.3,
+              padding: `${cfg.pill.paddingY}px ${cfg.pill.paddingX}px`,
               borderRadius: 9999,
-              whiteSpace: 'nowrap',
+              // width: max-content makes the pill expand to fit text on a
+              // single line; maxWidth then caps it, forcing a wrap only once
+              // the natural width exceeds the bound.
+              width: 'max-content',
+              maxWidth: cfg.pill.maxWidth,
+              boxSizing: 'border-box',
+              textAlign: 'center',
+              // pre-wrap / pre preserve user-entered line breaks. The wrap
+              // variant also lets text fall to a new line once maxWidth is hit.
+              whiteSpace: cfg.pill.allowWrap ? 'pre-wrap' : 'pre',
+              wordBreak: 'normal',
               boxShadow: '0 8px 24px rgba(0, 0, 0, 0.25)',
             }}
           >
@@ -321,6 +575,8 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
 interface CurvedHeadlineProps {
   pathId: string
   gradientId: string
+  haloId: string
+  innerShadowId: string
   text: string
   fontSize: number
   borderWidth: number
@@ -334,6 +590,8 @@ interface CurvedHeadlineProps {
 function CurvedHeadline({
   pathId,
   gradientId,
+  haloId,
+  innerShadowId,
   text,
   fontSize,
   borderWidth,
@@ -366,7 +624,7 @@ function CurvedHeadline({
         strokeLinejoin="miter"
         strokeMiterlimit={2}
         paintOrder="stroke"
-        filter={`url(#${HEADLINE_HALO_ID})`}
+        filter={`url(#${haloId})`}
       >
         {textPathNode}
       </text>
@@ -398,13 +656,12 @@ function CurvedHeadline({
         {textPathNode}
       </text>
 
-      {/* Inner shadow layer — gradient fill (no stroke) + inset shadow
-          so the shadow only appears within the bright gradient area, not
-          on the cream highlight rim. */}
+      {/* Inner shadow layer — gradient fill (no stroke) + inset shadow so the
+          shadow only appears within the bright gradient area. */}
       <text
         {...sharedTextProps}
         fill={`url(#${gradientId})`}
-        filter={`url(#${HEADLINE_INNER_SHADOW_ID})`}
+        filter={`url(#${innerShadowId})`}
       >
         {textPathNode}
       </text>

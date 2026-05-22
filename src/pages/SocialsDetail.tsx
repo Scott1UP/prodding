@@ -1,25 +1,35 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import JSZip from 'jszip'
 import { getFontEmbedCSS, toJpeg } from 'html-to-image'
-import { ArrowLeft, Download, RotateCcw } from 'lucide-react'
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  RotateCcw,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import {
-  HEADLINE_DEFAULTS,
+  FORMATS,
   SocialsAsset,
+  type FormatKey,
 } from '@/components/ui/socials-asset'
 
-const ASSET_WIDTH = 1920
-const ASSET_HEIGHT = 1080
+const FORMAT_ORDER: FormatKey[] = ['landscape', 'portrait', 'vertical']
 
-const SIZE_MIN = 160
-const SIZE_MAX = 220
+const PREVIEW_MAX_HEIGHT = 560
+const ARROW_SIZE = 48
+const ARROW_GAP = 40
 
-const LINE_GAP_RANGE = 30
-const LINE_GAP_MIN = HEADLINE_DEFAULTS.lineGap - LINE_GAP_RANGE / 2
-const LINE_GAP_MAX = HEADLINE_DEFAULTS.lineGap + LINE_GAP_RANGE / 2
+// Arrow position is anchored to the widest format (landscape) so the buttons
+// don't jump around when switching to narrower formats.
+const LANDSCAPE_PREVIEW_WIDTH =
+  PREVIEW_MAX_HEIGHT * (FORMATS.landscape.width / FORMATS.landscape.height)
+const PREVIEW_CONTAINER_WIDTH =
+  LANDSCAPE_PREVIEW_WIDTH + 2 * (ARROW_GAP + ARROW_SIZE)
 
 const ACCENT = '#7235ED'
 const ACCENT_HOVER = '#5F26D4'
@@ -41,71 +51,155 @@ const SLIDER_CLASS =
 const accentCtaClass =
   'text-sm font-bold text-[#7235ED] hover:text-[#5F26D4] cursor-pointer transition-colors'
 
+interface StyleState {
+  fontSizeOne: number
+  fontSizeTwo: number
+  lineGap: number
+  centerYOffset: number
+}
+
+function defaultStyleFor(key: FormatKey): StyleState {
+  const h = FORMATS[key].headline
+  return {
+    fontSizeOne: h.fontSizeOne,
+    fontSizeTwo: h.fontSizeTwo,
+    lineGap: h.lineGap,
+    centerYOffset: 0,
+  }
+}
+
+function initialStyleByFormat(): Record<FormatKey, StyleState> {
+  return {
+    landscape: defaultStyleFor('landscape'),
+    portrait: defaultStyleFor('portrait'),
+    vertical: defaultStyleFor('vertical'),
+  }
+}
+
 export default function SocialsDetail() {
   const navigate = useNavigate()
 
-  // Content state
+  // Shared content
   const [lineOne, setLineOne] = useState('Devcon 8 Tickets')
   const [lineTwo, setLineTwo] = useState('Available from 20 May')
   const [showLineTwo, setShowLineTwo] = useState(true)
   const [pillText, setPillText] = useState(
-    'Early Bird payment via ETH only • Limited quantity',
+    'Early Bird payment via ETH only',
   )
   const [showPill, setShowPill] = useState(true)
 
-  // Headline style state
-  const [fontSizeOne, setFontSizeOne] = useState(HEADLINE_DEFAULTS.fontSizeOne)
-  const [fontSizeTwo, setFontSizeTwo] = useState(HEADLINE_DEFAULTS.fontSizeTwo)
-  const [lineGap, setLineGap] = useState(HEADLINE_DEFAULTS.lineGap)
+  // Per-format style overrides
+  const [styleByFormat, setStyleByFormat] = useState<
+    Record<FormatKey, StyleState>
+  >(initialStyleByFormat)
 
+  // Carousel
+  const [activeFormat, setActiveFormat] = useState<FormatKey>('landscape')
+
+  // Download selection
+  const [selectedFormats, setSelectedFormats] = useState<Set<FormatKey>>(
+    new Set(FORMAT_ORDER),
+  )
   const [downloading, setDownloading] = useState(false)
 
-  const previewWrapRef = useRef<HTMLDivElement>(null)
-  const assetRef = useRef<HTMLDivElement>(null)
-  const [scale, setScale] = useState(0.5)
+  // One off-screen ref per format so any of them can be rendered to JPEG.
+  const landscapeRef = useRef<HTMLDivElement>(null)
+  const portraitRef = useRef<HTMLDivElement>(null)
+  const verticalRef = useRef<HTMLDivElement>(null)
+  const refByFormat: Record<
+    FormatKey,
+    React.RefObject<HTMLDivElement | null>
+  > = {
+    landscape: landscapeRef,
+    portrait: portraitRef,
+    vertical: verticalRef,
+  }
 
-  useEffect(() => {
-    const el = previewWrapRef.current
-    if (!el) return
-    const update = () => {
-      const w = el.clientWidth
-      setScale(w / ASSET_WIDTH)
-    }
-    update()
-    const ro = new ResizeObserver(update)
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [])
+  const activeCfg = FORMATS[activeFormat]
+  const activeStyle = styleByFormat[activeFormat]
+  const previewWidth = PREVIEW_MAX_HEIGHT * (activeCfg.width / activeCfg.height)
+  const previewScale = PREVIEW_MAX_HEIGHT / activeCfg.height
 
-  const resetStyle = () => {
-    setFontSizeOne(HEADLINE_DEFAULTS.fontSizeOne)
-    setFontSizeTwo(HEADLINE_DEFAULTS.fontSizeTwo)
-    setLineGap(HEADLINE_DEFAULTS.lineGap)
+  const cycleFormat = (delta: 1 | -1) => {
+    const idx = FORMAT_ORDER.indexOf(activeFormat)
+    const next = (idx + delta + FORMAT_ORDER.length) % FORMAT_ORDER.length
+    setActiveFormat(FORMAT_ORDER[next])
+  }
+
+  const updateActiveStyle = (patch: Partial<StyleState>) => {
+    setStyleByFormat((prev) => ({
+      ...prev,
+      [activeFormat]: { ...prev[activeFormat], ...patch },
+    }))
+  }
+
+  const resetActiveStyle = () => {
+    setStyleByFormat((prev) => ({
+      ...prev,
+      [activeFormat]: defaultStyleFor(activeFormat),
+    }))
+  }
+
+  const toggleSelected = (key: FormatKey) => {
+    setSelectedFormats((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
+
+  const renderJpeg = async (key: FormatKey): Promise<string> => {
+    const node = refByFormat[key].current
+    if (!node) throw new Error(`Missing ref for format ${key}`)
+    const cfg = FORMATS[key]
+    const fontEmbedCSS = await getFontEmbedCSS(node)
+    return toJpeg(node, {
+      width: cfg.width,
+      height: cfg.height,
+      pixelRatio: 1,
+      cacheBust: true,
+      quality: 1,
+      backgroundColor: '#1A1040',
+      fontEmbedCSS,
+    })
   }
 
   const handleDownload = async () => {
-    if (!assetRef.current) return
+    if (selectedFormats.size === 0) return
     setDownloading(true)
     try {
-      // Browsers lazy-load Google Font weights; force-load the pill's 800
-      // weight before serializing so it's available to the SVG rasterizer.
       await document.fonts.load(`800 32px "Poppins"`, pillText || ' ')
       await document.fonts.ready
 
-      const fontEmbedCSS = await getFontEmbedCSS(assetRef.current)
-      const dataUrl = await toJpeg(assetRef.current, {
-        width: ASSET_WIDTH,
-        height: ASSET_HEIGHT,
-        pixelRatio: 1,
-        cacheBust: true,
-        quality: 1,
-        backgroundColor: '#1A1040',
-        fontEmbedCSS,
-      })
+      const keys = FORMAT_ORDER.filter((k) => selectedFormats.has(k))
+
+      if (keys.length === 1) {
+        const k = keys[0]
+        const dataUrl = await renderJpeg(k)
+        const a = document.createElement('a')
+        a.href = dataUrl
+        a.download = `devcon-social-${FORMATS[k].fileSuffix}.jpg`
+        a.click()
+        return
+      }
+
+      const zip = new JSZip()
+      for (const k of keys) {
+        const dataUrl = await renderJpeg(k)
+        // dataUrl is "data:image/jpeg;base64,...." — strip the prefix.
+        const base64 = dataUrl.split(',')[1]
+        zip.file(`devcon-social-${FORMATS[k].fileSuffix}.jpg`, base64, {
+          base64: true,
+        })
+      }
+      const blob = await zip.generateAsync({ type: 'blob' })
+      const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
-      a.href = dataUrl
-      a.download = 'devcon-social.jpg'
+      a.href = url
+      a.download = 'devcon-social-bundle.zip'
       a.click()
+      URL.revokeObjectURL(url)
     } catch (err) {
       console.error('Export failed:', err)
     } finally {
@@ -113,8 +207,51 @@ export default function SocialsDetail() {
     }
   }
 
+  const downloadLabel =
+    selectedFormats.size > 1
+      ? `Download (${selectedFormats.size})`
+      : 'Download'
+
+  const sharedAssetProps = {
+    lineOne,
+    lineTwo,
+    showLineTwo,
+    pillText,
+    showPill,
+  }
+
   return (
     <div className="space-y-8">
+      {/* Off-screen full-resolution renders so every format is exportable
+          regardless of which one is currently on-screen. */}
+      <div
+        aria-hidden
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: 0,
+          height: 0,
+          overflow: 'hidden',
+          pointerEvents: 'none',
+          opacity: 0,
+          zIndex: -1,
+        }}
+      >
+        {FORMAT_ORDER.map((k) => (
+          <SocialsAsset
+            key={k}
+            ref={refByFormat[k]}
+            format={k}
+            {...sharedAssetProps}
+            fontSizeOne={styleByFormat[k].fontSizeOne}
+            fontSizeTwo={styleByFormat[k].fontSizeTwo}
+            lineGap={styleByFormat[k].lineGap}
+            centerYOffset={styleByFormat[k].centerYOffset}
+          />
+        ))}
+      </div>
+
       <header>
         <Button
           variant="ghost"
@@ -128,67 +265,106 @@ export default function SocialsDetail() {
         <h1 className="text-3xl font-extrabold text-text-primary tracking-tight">
           Asset Generator
         </h1>
-        <p className="mt-3 text-text-secondary text-base font-light whitespace-nowrap">
-          Add one or two headline texts, plus an optional pill — download a 1920×1080 JPEG.
+        <p className="mt-3 text-text-secondary text-base font-light">
+          Add one or two headline texts, plus an optional pill — download
+          ready-to-post JPEGs in three formats.
         </p>
       </header>
 
       <section className="space-y-3">
-        <div className="flex items-baseline justify-between max-w-5xl mx-auto">
+        <div
+          className="flex items-baseline justify-between mx-auto"
+          style={{ width: PREVIEW_CONTAINER_WIDTH }}
+        >
           <h2 className="text-base font-medium text-text-primary">Preview</h2>
           <span className="text-xs text-text-tertiary font-light">
-            1920 × 1080 — exported at full resolution
+            {activeCfg.label} — {activeCfg.width} × {activeCfg.height} —
+            exports at full resolution
           </span>
         </div>
 
         <div
-          ref={previewWrapRef}
-          className="relative w-full max-w-5xl mx-auto rounded-xl border border-border overflow-hidden bg-surface-overlay"
-          style={{ aspectRatio: `${ASSET_WIDTH} / ${ASSET_HEIGHT}` }}
+          className="relative mx-auto flex items-center justify-center"
+          style={{
+            width: PREVIEW_CONTAINER_WIDTH,
+            height: PREVIEW_MAX_HEIGHT,
+          }}
         >
+          <CarouselArrow
+            direction="left"
+            onClick={() => cycleFormat(-1)}
+            label="Previous format"
+          />
+
           <div
+            className="relative rounded-xl border border-border overflow-hidden bg-surface-overlay shrink-0 transition-[width] duration-300 ease-out"
             style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              transform: `scale(${scale})`,
-              transformOrigin: 'top left',
+              width: previewWidth,
+              height: PREVIEW_MAX_HEIGHT,
             }}
           >
-            <SocialsAsset
-              ref={assetRef}
-              lineOne={lineOne}
-              lineTwo={lineTwo}
-              showLineTwo={showLineTwo}
-              pillText={pillText}
-              showPill={showPill}
-              fontSizeOne={fontSizeOne}
-              fontSizeTwo={fontSizeTwo}
-              lineGap={lineGap}
-            />
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                transform: `scale(${previewScale})`,
+                transformOrigin: 'top left',
+              }}
+            >
+              <SocialsAsset
+                format={activeFormat}
+                {...sharedAssetProps}
+                fontSizeOne={activeStyle.fontSizeOne}
+                fontSizeTwo={activeStyle.fontSizeTwo}
+                lineGap={activeStyle.lineGap}
+                centerYOffset={activeStyle.centerYOffset}
+              />
+            </div>
           </div>
+
+          <CarouselArrow
+            direction="right"
+            onClick={() => cycleFormat(1)}
+            label="Next format"
+          />
         </div>
       </section>
 
       <section className="bg-[#F9F8FA] rounded-xl px-4 md:px-8 py-6 space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
           <h2 className="text-xl font-extrabold text-text-primary tracking-tight">
             Customize
+            <span className="ml-2 text-sm font-medium text-text-secondary">
+              {activeCfg.label}
+            </span>
           </h2>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 flex-wrap">
             <Button
               variant="ghost"
               size="lg"
               className={`gap-2 rounded-full hover:bg-[#7235ED]/10 ${accentCtaClass} hover:scale-[1.03] active:scale-[0.97] transition-[scale,color,background-color] duration-200 ease-out`}
-              onClick={resetStyle}
+              onClick={resetActiveStyle}
             >
               <RotateCcw size={14} strokeWidth={2} />
               Reset sizes
             </Button>
+
+            <div className="flex items-center gap-3 pl-3 border-l border-border">
+              {FORMAT_ORDER.map((k) => (
+                <FormatCheckbox
+                  key={k}
+                  checked={selectedFormats.has(k)}
+                  onChange={() => toggleSelected(k)}
+                  label={FORMATS[k].label}
+                />
+              ))}
+            </div>
+
             <button
               type="button"
               onClick={handleDownload}
-              disabled={downloading}
+              disabled={downloading || selectedFormats.size === 0}
               style={{ backgroundColor: ACCENT }}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.backgroundColor = ACCENT_HOVER)
@@ -199,12 +375,12 @@ export default function SocialsDetail() {
               className="inline-flex items-center gap-2 h-10 px-4 rounded-full text-sm font-bold text-white cursor-pointer transition-[scale,background-color,color] duration-200 ease-out hover:scale-[1.03] active:scale-[0.97] disabled:opacity-60 disabled:pointer-events-none"
             >
               <Download size={14} strokeWidth={2.25} />
-              {downloading ? 'Rendering…' : 'Download JPEG'}
+              {downloading ? 'Rendering…' : downloadLabel}
             </button>
           </div>
         </div>
 
-        <div className="flex gap-4 items-end">
+        <div className="flex gap-4 items-end flex-wrap">
           <FieldColumn>
             <FieldHeader htmlFor="socials-line-one" label="Headline 1">
               <span className="text-xs text-text-secondary font-light">
@@ -216,18 +392,31 @@ export default function SocialsDetail() {
               value={lineOne}
               onValueChange={setLineOne}
               placeholder="Devcon 8 Tickets"
-              sizeValue={fontSizeOne}
-              onSizeChange={setFontSizeOne}
+              sizeValue={activeStyle.fontSizeOne}
+              onSizeChange={(v) => updateActiveStyle({ fontSizeOne: v })}
+              sizeMin={activeCfg.sizeOneMin}
+              sizeMax={activeCfg.sizeOneMax}
             />
           </FieldColumn>
 
           <FieldColumn narrow>
             <FieldHeader label="Line gap" />
             <SliderInBox
-              value={lineGap}
-              onChange={setLineGap}
-              min={LINE_GAP_MIN}
-              max={LINE_GAP_MAX}
+              value={activeStyle.lineGap}
+              onChange={(v) => updateActiveStyle({ lineGap: v })}
+              min={activeCfg.lineGapMin}
+              max={activeCfg.lineGapMax}
+              step={1}
+            />
+          </FieldColumn>
+
+          <FieldColumn narrow>
+            <FieldHeader label="Vertical offset" />
+            <SliderInBox
+              value={activeStyle.centerYOffset}
+              onChange={(v) => updateActiveStyle({ centerYOffset: v })}
+              min={activeCfg.centerYOffsetMin}
+              max={activeCfg.centerYOffsetMax}
               step={1}
             />
           </FieldColumn>
@@ -248,8 +437,10 @@ export default function SocialsDetail() {
               onValueChange={setLineTwo}
               placeholder="Available from 20 May"
               disabled={!showLineTwo}
-              sizeValue={fontSizeTwo}
-              onSizeChange={setFontSizeTwo}
+              sizeValue={activeStyle.fontSizeTwo}
+              onSizeChange={(v) => updateActiveStyle({ fontSizeTwo: v })}
+              sizeMin={activeCfg.sizeTwoMin}
+              sizeMax={activeCfg.sizeTwoMax}
             />
           </FieldColumn>
 
@@ -263,18 +454,86 @@ export default function SocialsDetail() {
                 {showPill ? 'Hide' : 'Show'}
               </button>
             </FieldHeader>
-            <Input
+            <textarea
               id="socials-pill"
               value={pillText}
               onChange={(e) => setPillText(e.target.value)}
-              placeholder="Early Bird payment via ETH only • Limited quantity"
+              placeholder="Early Bird payment via ETH only"
               disabled={!showPill}
-              className="text-base bg-white hover:border-text-tertiary focus-visible:border-input focus-visible:ring-0"
+              rows={1}
+              className="block h-9 w-full min-w-0 rounded-md border border-input bg-white shadow-xs px-3 py-1.5 text-base leading-6 outline-none transition-colors hover:border-text-tertiary focus-visible:border-input focus-visible:ring-0 resize-none disabled:cursor-not-allowed disabled:opacity-50 overflow-y-auto"
             />
           </FieldColumn>
         </div>
       </section>
     </div>
+  )
+}
+
+function CarouselArrow({
+  direction,
+  onClick,
+  label,
+}: {
+  direction: 'left' | 'right'
+  onClick: () => void
+  label: string
+}) {
+  const Icon = direction === 'left' ? ChevronLeft : ChevronRight
+  const positionClass = direction === 'left' ? 'left-0' : 'right-0'
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className={`absolute ${positionClass} top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white shadow-md border border-border text-text-primary flex items-center justify-center cursor-pointer hover:bg-[#7235ED]/10 hover:text-[#7235ED] hover:border-[#7235ED] hover:scale-[1.05] active:scale-[0.95] transition-[scale,background-color,color,border-color] duration-200 ease-out`}
+    >
+      <Icon size={24} strokeWidth={2.25} />
+    </button>
+  )
+}
+
+function FormatCheckbox({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean
+  onChange: () => void
+  label: string
+}) {
+  return (
+    <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-text-primary select-none hover:text-[#7235ED] transition-colors">
+      <span
+        className={`inline-flex items-center justify-center w-4 h-4 rounded border-2 transition-colors ${
+          checked
+            ? 'bg-[#7235ED] border-[#7235ED]'
+            : 'bg-white border-text-tertiary'
+        }`}
+      >
+        {checked && (
+          <svg
+            viewBox="0 0 12 12"
+            width="10"
+            height="10"
+            fill="none"
+            stroke="white"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M2 6.5 L5 9.5 L10 3" />
+          </svg>
+        )}
+      </span>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="sr-only"
+      />
+      {label}
+    </label>
   )
 }
 
@@ -287,7 +546,7 @@ function FieldColumn({
 }) {
   return (
     <div
-      className={`space-y-2 min-w-0 ${narrow ? 'w-44 shrink-0' : 'flex-1'}`}
+      className={`space-y-2 min-w-0 ${narrow ? 'w-32 shrink-0' : 'flex-1 min-w-[220px]'}`}
     >
       {children}
     </div>
@@ -321,6 +580,8 @@ interface InputWithSizeSliderProps {
   disabled?: boolean
   sizeValue: number
   onSizeChange: (v: number) => void
+  sizeMin: number
+  sizeMax: number
 }
 
 function InputWithSizeSlider({
@@ -331,6 +592,8 @@ function InputWithSizeSlider({
   disabled = false,
   sizeValue,
   onSizeChange,
+  sizeMin,
+  sizeMax,
 }: InputWithSizeSliderProps) {
   return (
     <div
@@ -353,8 +616,8 @@ function InputWithSizeSlider({
         <Slider
           value={[sizeValue]}
           onValueChange={([v]) => onSizeChange(v)}
-          min={SIZE_MIN}
-          max={SIZE_MAX}
+          min={sizeMin}
+          max={sizeMax}
           step={1}
           disabled={disabled}
           className={SLIDER_CLASS}
