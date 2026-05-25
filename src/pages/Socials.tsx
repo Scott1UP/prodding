@@ -6,7 +6,7 @@ const socials = [
     slug: 'asset-generator',
     name: 'Asset Generator',
     description:
-      'Customize headline and subtitle, export a 1920×1080 JPEG ready to post.',
+      'Customize a template, then export a JPEG asset ready to post.',
   },
 ]
 

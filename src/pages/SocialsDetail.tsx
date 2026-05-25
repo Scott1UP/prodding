@@ -15,8 +15,12 @@ import { Slider } from '@/components/ui/slider'
 import {
   FORMATS,
   SocialsAsset,
+  TEMPLATES,
   type FormatKey,
+  type TemplateKey,
 } from '@/components/ui/socials-asset'
+
+const TEMPLATE_ORDER: TemplateKey[] = ['standard', 'ecosystem']
 
 const FORMAT_ORDER: FormatKey[] = ['landscape', 'portrait', 'vertical']
 
@@ -79,6 +83,9 @@ function initialStyleByFormat(): Record<FormatKey, StyleState> {
 export default function SocialsDetail() {
   const navigate = useNavigate()
 
+  // Template style
+  const [template, setTemplate] = useState<TemplateKey>('standard')
+
   // Shared content
   const [lineOne, setLineOne] = useState('Devcon 8 Tickets')
   const [lineTwo, setLineTwo] = useState('Available from 20 May')
@@ -87,6 +94,7 @@ export default function SocialsDetail() {
     'Early Bird payment via ETH only',
   )
   const [showPill, setShowPill] = useState(true)
+  const [writerName, setWriterName] = useState('Candela')
 
   // Per-format style overrides
   const [styleByFormat, setStyleByFormat] = useState<
@@ -213,11 +221,13 @@ export default function SocialsDetail() {
       : 'Download'
 
   const sharedAssetProps = {
+    template,
     lineOne,
     lineTwo,
     showLineTwo,
     pillText,
     showPill,
+    writerName,
   }
 
   return (
@@ -252,23 +262,26 @@ export default function SocialsDetail() {
         ))}
       </div>
 
-      <header>
-        <Button
-          variant="ghost"
-          size="sm"
-          className={`mb-3 -ml-2 gap-2 hover:bg-[#7235ED]/10 ${accentCtaClass}`}
-          onClick={() => navigate('/socials')}
-        >
-          <ArrowLeft size={16} strokeWidth={2} />
-          Back
-        </Button>
-        <h1 className="text-3xl font-extrabold text-text-primary tracking-tight">
-          Asset Generator
-        </h1>
-        <p className="mt-3 text-text-secondary text-base font-light">
-          Add one or two headline texts, plus an optional pill — download
-          ready-to-post JPEGs in three formats.
-        </p>
+      <header className="flex items-end justify-between gap-6 flex-wrap">
+        <div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`mb-3 -ml-2 gap-2 hover:bg-[#7235ED]/10 ${accentCtaClass}`}
+            onClick={() => navigate('/socials')}
+          >
+            <ArrowLeft size={16} strokeWidth={2} />
+            Back
+          </Button>
+          <h1 className="text-3xl font-extrabold text-text-primary tracking-tight">
+            Asset Generator
+          </h1>
+          <p className="mt-3 text-text-secondary text-base font-light">
+            Add one or two headline texts, plus an optional pill — download
+            ready-to-post JPEGs in three formats.
+          </p>
+        </div>
+        <TemplateSwitcher value={template} onChange={setTemplate} />
       </header>
 
       <section className="space-y-3">
@@ -444,28 +457,92 @@ export default function SocialsDetail() {
             />
           </FieldColumn>
 
-          <FieldColumn>
-            <FieldHeader htmlFor="socials-pill" label="Pill text">
-              <button
-                type="button"
-                onClick={() => setShowPill((v) => !v)}
-                className={`${accentCtaClass} hover:underline underline-offset-2`}
-              >
-                {showPill ? 'Hide' : 'Show'}
-              </button>
-            </FieldHeader>
-            <textarea
-              id="socials-pill"
-              value={pillText}
-              onChange={(e) => setPillText(e.target.value)}
-              placeholder="Early Bird payment via ETH only"
-              disabled={!showPill}
-              rows={1}
-              className="block h-9 w-full min-w-0 rounded-md border border-input bg-white shadow-xs px-3 py-1.5 text-base leading-6 outline-none transition-colors hover:border-text-tertiary focus-visible:border-input focus-visible:ring-0 resize-none disabled:cursor-not-allowed disabled:opacity-50 overflow-y-auto"
-            />
-          </FieldColumn>
+          {template === 'standard' ? (
+            <FieldColumn>
+              <FieldHeader htmlFor="socials-pill" label="Pill text">
+                <button
+                  type="button"
+                  onClick={() => setShowPill((v) => !v)}
+                  className={`${accentCtaClass} hover:underline underline-offset-2`}
+                >
+                  {showPill ? 'Hide' : 'Show'}
+                </button>
+              </FieldHeader>
+              <textarea
+                id="socials-pill"
+                value={pillText}
+                onChange={(e) => setPillText(e.target.value)}
+                placeholder="Early Bird payment via ETH only"
+                disabled={!showPill}
+                rows={1}
+                className="block h-9 w-full min-w-0 rounded-md border border-input bg-white shadow-xs px-3 py-1.5 text-base leading-6 outline-none transition-colors hover:border-text-tertiary focus-visible:border-input focus-visible:ring-0 resize-none disabled:cursor-not-allowed disabled:opacity-50 overflow-y-auto"
+              />
+            </FieldColumn>
+          ) : (
+            <FieldColumn>
+              <FieldHeader htmlFor="socials-writer" label="Writer name" />
+              <input
+                id="socials-writer"
+                type="text"
+                value={writerName}
+                onChange={(e) => setWriterName(e.target.value)}
+                placeholder="Candela"
+                className="block h-9 w-full min-w-0 rounded-md border border-input bg-white shadow-xs px-3 py-1.5 text-base leading-6 outline-none transition-colors hover:border-text-tertiary focus-visible:border-input focus-visible:ring-0"
+              />
+            </FieldColumn>
+          )}
         </div>
       </section>
+    </div>
+  )
+}
+
+function TemplateSwitcher({
+  value,
+  onChange,
+}: {
+  value: TemplateKey
+  onChange: (k: TemplateKey) => void
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      {TEMPLATE_ORDER.map((k) => {
+        const t = TEMPLATES[k]
+        const active = value === k
+        return (
+          <button
+            key={k}
+            type="button"
+            onClick={() => onChange(k)}
+            aria-pressed={active}
+            className={`group flex flex-col items-center gap-1.5 cursor-pointer transition-transform duration-200 ease-out hover:scale-[1.03] active:scale-[0.97]`}
+          >
+            <span
+              className={`block w-24 h-[54px] rounded-md overflow-hidden border-2 transition-colors ${
+                active
+                  ? 'border-[#7235ED] ring-2 ring-[#7235ED]/30'
+                  : 'border-border group-hover:border-[#7235ED]/60'
+              }`}
+            >
+              <img
+                src={t.thumbSrc}
+                alt=""
+                className="w-full h-full object-cover block"
+                draggable={false}
+              />
+            </span>
+            <span
+              className={`text-xs font-medium transition-colors ${
+                active
+                  ? 'text-[#7235ED]'
+                  : 'text-text-secondary group-hover:text-[#7235ED]'
+              }`}
+            >
+              {t.label}
+            </span>
+          </button>
+        )
+      })}
     </div>
   )
 }

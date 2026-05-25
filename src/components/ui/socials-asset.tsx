@@ -1,6 +1,63 @@
 import { forwardRef, useMemo } from 'react'
 
 export type FormatKey = 'landscape' | 'portrait' | 'vertical'
+export type TemplateKey = 'standard' | 'ecosystem'
+
+export interface CreditsStyle {
+  bottom: number
+  smallSize: number
+  largeSize: number
+  maxWidth: number
+}
+
+export interface TemplateConfig {
+  key: TemplateKey
+  label: string
+  thumbSrc: string
+  bgArtByFormat: Record<FormatKey, string>
+  showLogo: boolean
+  showPill: boolean
+  showCredits: boolean
+  creditsByFormat?: Record<FormatKey, CreditsStyle>
+}
+
+export const TEMPLATES: Record<TemplateKey, TemplateConfig> = {
+  standard: {
+    key: 'standard',
+    label: 'Standard',
+    thumbSrc: '/socials/base-art.jpg',
+    bgArtByFormat: {
+      landscape: '/socials/base-art.jpg',
+      portrait: '/socials/base-art-1080x1350.jpg',
+      vertical: '/socials/base-art-1080x1920.jpg',
+    },
+    showLogo: true,
+    showPill: true,
+    showCredits: false,
+  },
+  ecosystem: {
+    key: 'ecosystem',
+    label: 'Ecosystem',
+    thumbSrc: '/socials/X-landscape-ecosystem-bg-art.jpg',
+    bgArtByFormat: {
+      landscape: '/socials/X-landscape-ecosystem-bg-art.jpg',
+      portrait: '/socials/IG-vertical-ecosystem-bg-art.jpg',
+      vertical: '/socials/Vertical-ecosystem-bg-art.jpg',
+    },
+    showLogo: false,
+    showPill: false,
+    showCredits: true,
+    creditsByFormat: {
+      // Landscape: sit in the bottom strip, vertically aligned with the
+      // baked-in DEVCON logo (bottom-left) and dates (bottom-right), small
+      // enough to fit in the gap between them.
+      landscape: { bottom: 110, smallSize: 17, largeSize: 25, maxWidth: 1100 },
+      // Portrait & Vertical: positioned above the baked-in logo/dates band.
+      portrait: { bottom: 240, smallSize: 21, largeSize: 30, maxWidth: 940 },
+      vertical: { bottom: 230, smallSize: 21, largeSize: 30, maxWidth: 940 },
+    },
+  },
+}
 
 export interface HeadlineStyle {
   fontSizeOne: number
@@ -201,11 +258,13 @@ export const FORMATS: Record<FormatKey, FormatConfig> = {
 
 export interface SocialsAssetProps {
   format: FormatKey
+  template: TemplateKey
   lineOne: string
   lineTwo?: string
   showLineTwo: boolean
   pillText: string
   showPill: boolean
+  writerName: string
 
   // Optional per-instance overrides — fall back to FORMATS[format].headline.
   fontSizeOne?: number
@@ -274,11 +333,13 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
   function SocialsAsset(
     {
       format,
+      template,
       lineOne,
       lineTwo,
       showLineTwo,
       pillText,
       showPill,
+      writerName,
       fontSizeOne,
       fontSizeTwo,
       lineGap,
@@ -288,7 +349,9 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
     ref,
   ) {
     const cfg = FORMATS[format]
+    const tpl = TEMPLATES[template]
     const h = cfg.headline
+    const bgArt = tpl.bgArtByFormat[format]
 
     // Scope SVG IDs per format so multiple instances on one page (e.g. visible
     // preview + hidden export nodes) don't collide on shared filter/gradient IDs.
@@ -366,7 +429,7 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
         }}
       >
         <img
-          src={cfg.bgArt}
+          src={bgArt}
           alt=""
           style={{
             position: 'absolute',
@@ -378,19 +441,21 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
           }}
         />
 
-        <img
-          src="/socials/logo.png"
-          alt=""
-          style={{
-            position: 'absolute',
-            top: cfg.logoTop,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: 'auto',
-            height: cfg.logoHeight,
-            display: 'block',
-          }}
-        />
+        {tpl.showLogo && (
+          <img
+            src="/socials/logo.png"
+            alt=""
+            style={{
+              position: 'absolute',
+              top: cfg.logoTop,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: 'auto',
+              height: cfg.logoHeight,
+              display: 'block',
+            }}
+          />
+        )}
 
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -445,15 +510,15 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
               height="900%"
             >
               <feGaussianBlur in="SourceAlpha" stdDeviation="16" result="b1" />
-              <feFlood floodColor="#BEECEE" result="c1" />
+              <feFlood floodColor="#FCF4D2" result="c1" />
               <feComposite in="c1" in2="b1" operator="in" result="g1" />
 
               <feGaussianBlur in="SourceAlpha" stdDeviation="30" result="b2" />
-              <feFlood floodColor="#BEECEE" result="c2" />
+              <feFlood floodColor="#FCF4D2" result="c2" />
               <feComposite in="c2" in2="b2" operator="in" result="g2" />
 
               <feGaussianBlur in="SourceAlpha" stdDeviation="80" result="b3" />
-              <feFlood floodColor="#BEECEE" floodOpacity="0.91" result="c3" />
+              <feFlood floodColor="#FCF4D2" floodOpacity="0.91" result="c3" />
               <feComposite in="c3" in2="b3" operator="in" result="g3" />
 
               <feMerge>
@@ -535,7 +600,7 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
           ))}
         </svg>
 
-        {showPill && !!pillText.trim() && (
+        {tpl.showPill && showPill && !!pillText.trim() && (
           <div
             style={{
               position: 'absolute',
@@ -567,10 +632,66 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
             {pillText}
           </div>
         )}
+
+        {tpl.showCredits && tpl.creditsByFormat && (
+          <Credits
+            writerName={writerName}
+            style={tpl.creditsByFormat[format]}
+          />
+        )}
       </div>
     )
   },
 )
+
+interface CreditsProps {
+  writerName: string
+  style: CreditsStyle
+}
+
+function Credits({ writerName, style }: CreditsProps) {
+  const { bottom, smallSize, largeSize, maxWidth } = style
+  const name = (writerName || '').trim().toUpperCase() || 'ADAM'
+
+  const small = { fontSize: smallSize }
+  const large = { fontSize: largeSize }
+
+  return (
+    <p
+      style={{
+        position: 'absolute',
+        bottom,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        margin: 0,
+        width: 'max-content',
+        maxWidth,
+        fontFamily: '"Poppins", sans-serif',
+        fontWeight: 700,
+        color: '#FCE6B7',
+        textTransform: 'uppercase',
+        textAlign: 'center',
+        lineHeight: 1.15,
+        textShadow: '0px 2px 8px rgba(34, 17, 68, 0.7)',
+        wordBreak: 'break-word',
+      }}
+    >
+      <span style={small}>produced by </span>
+      <span style={large}>DEVCON TEAM</span>
+      <br />
+      <span style={small}>written by </span>
+      <span style={large}>{name}</span>
+      <span style={small}> creative producers </span>
+      <span style={large}>TOMO </span>
+      <span style={small}>and </span>
+      <span style={large}>SCOTT</span>
+      <br />
+      <span style={small}>an </span>
+      <span style={large}>ETHEREUM FOUNDATION </span>
+      <span style={small}>production</span>
+    </p>
+  )
+}
 
 interface CurvedHeadlineProps {
   pathId: string

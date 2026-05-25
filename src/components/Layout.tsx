@@ -2,12 +2,11 @@ import { useState, useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import { Button } from '@/components/ui/button'
-import { PanelLeftClose, PanelLeftOpen, Menu, X } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { useIsMobile } from '@/hooks/useIsMobile'
-import { cn } from '@/lib/utils'
 
 export default function Layout() {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const isMobile = useIsMobile(1024)
 
   useEffect(() => {
@@ -36,7 +35,12 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-screen bg-surface overflow-x-clip">
-      <Sidebar open={sidebarOpen} overlay={isMobile} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        open={sidebarOpen}
+        overlay={isMobile}
+        onClose={() => setSidebarOpen(false)}
+        onToggle={() => setSidebarOpen((v) => !v)}
+      />
 
       {isMobile && sidebarOpen && (
         <div
@@ -50,25 +54,17 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setSidebarOpen((v) => !v)}
-        className={cn(
-          'fixed z-40 transition-[left] duration-300 ease-out',
-          isMobile
-            ? 'top-4 right-4 bg-black text-white hover:bg-black/90'
-            : 'bg-surface-raised text-text-secondary hover:text-text-primary'
-        )}
-        style={isMobile ? undefined : { top: 28, left: sidebarOpen ? 228 : 16 }}
-        aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
-      >
-        {isMobile ? (
-          sidebarOpen ? <X className="size-5" strokeWidth={1.5} /> : <Menu className="size-5" strokeWidth={1.5} />
-        ) : (
-          sidebarOpen ? <PanelLeftClose className="size-5" strokeWidth={1.5} /> : <PanelLeftOpen className="size-5" strokeWidth={1.5} />
-        )}
-      </Button>
+      {isMobile && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setSidebarOpen((v) => !v)}
+          className="fixed z-40 top-4 right-4 bg-black text-white hover:bg-black/90"
+          aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+        >
+          {sidebarOpen ? <X className="size-5" strokeWidth={1.5} /> : <Menu className="size-5" strokeWidth={1.5} />}
+        </Button>
+      )}
     </div>
   )
 }
