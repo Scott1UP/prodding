@@ -1,7 +1,7 @@
 import { forwardRef, useMemo } from 'react'
 
 export type FormatKey = 'landscape' | 'portrait' | 'vertical'
-export type TemplateKey = 'standard' | 'ecosystem'
+export type TemplateKey = 'standard' | 'ecosystem' | 'ticketing'
 
 export interface CreditsStyle {
   bottom: number
@@ -19,6 +19,7 @@ export interface TemplateConfig {
   showPill: boolean
   showCredits: boolean
   creditsByFormat?: Record<FormatKey, CreditsStyle>
+  haloColor?: string
 }
 
 export const TEMPLATES: Record<TemplateKey, TemplateConfig> = {
@@ -34,6 +35,21 @@ export const TEMPLATES: Record<TemplateKey, TemplateConfig> = {
     showLogo: true,
     showPill: true,
     showCredits: false,
+    haloColor: '#BEECEE',
+  },
+  ticketing: {
+    key: 'ticketing',
+    label: 'Ticketing',
+    thumbSrc: '/socials/Ticketing-x-landscape.jpg',
+    bgArtByFormat: {
+      landscape: '/socials/Ticketing-x-landscape.jpg',
+      portrait: '/socials/Ticketing-IG-portrait.jpg',
+      vertical: '/socials/Ticketing-Vertical-1920x1080.jpg',
+    },
+    showLogo: false,
+    showPill: true,
+    showCredits: false,
+    haloColor: '#BEECEE',
   },
   ecosystem: {
     key: 'ecosystem',
@@ -88,7 +104,7 @@ const SHARED_HEADLINE_STYLE: Omit<
   highlightColor: '#FFF0C7',
   gradientTop: '#FEBF5D',
   gradientBottom: '#FDF4CE',
-  shadowDepth: 6,
+  shadowDepth: 12,
   shadowColor: '#621109',
   letterSpacing: -1,
   innerShadowOffset: 1.5,
@@ -203,7 +219,6 @@ export const FORMATS: Record<FormatKey, FormatConfig> = {
       lineGap: 170,
       borderWidth: 10,
       highlightWidth: 3,
-      shadowDepth: 6,
     },
     sizeOneMin: 110,
     sizeOneMax: 240,
@@ -242,7 +257,6 @@ export const FORMATS: Record<FormatKey, FormatConfig> = {
       lineGap: 150,
       borderWidth: 10,
       highlightWidth: 3,
-      shadowDepth: 6,
     },
     sizeOneMin: 110,
     sizeOneMax: 240,
@@ -264,6 +278,7 @@ export interface SocialsAssetProps {
   showLineTwo: boolean
   pillText: string
   showPill: boolean
+  showCredits: boolean
   writerName: string
 
   // Optional per-instance overrides — fall back to FORMATS[format].headline.
@@ -282,14 +297,6 @@ const PILL_BG = '#8048EF'
 // otherwise include the arc rise from textPath and stretch the gradient).
 const CAP_HEIGHT_RATIO = 0.85
 const DESCENDER_RATIO = 0.2
-
-function buildShadowChain(depth: number, color: string) {
-  const stops: string[] = []
-  for (let i = 2; i <= depth; i += 2) {
-    stops.push(`drop-shadow(0 ${i}px 0 ${color})`)
-  }
-  return stops.join(' ') || 'none'
-}
 
 // Greedy whitespace-split fit. Uses canvas measureText so widths reflect the
 // actual rendered font; falls back to a character-count heuristic if canvas
@@ -339,6 +346,7 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
       showLineTwo,
       pillText,
       showPill,
+      showCredits,
       writerName,
       fontSizeOne,
       fontSizeTwo,
@@ -352,6 +360,7 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
     const tpl = TEMPLATES[template]
     const h = cfg.headline
     const bgArt = tpl.bgArtByFormat[format]
+    const haloColor = tpl.haloColor ?? '#FCF4D2'
 
     // Scope SVG IDs per format so multiple instances on one page (e.g. visible
     // preview + hidden export nodes) don't collide on shared filter/gradient IDs.
@@ -359,6 +368,10 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
     const gradientIdBase = `${idPrefix}-gradient`
     const haloId = `${idPrefix}-halo`
     const innerShadowId = `${idPrefix}-inner-shadow`
+    const shadowOffsets = Array.from(
+      { length: Math.floor(h.shadowDepth / 2) },
+      (_, i) => (i + 1) * 2,
+    )
     const sizeOne = fontSizeOne ?? h.fontSizeOne
     const sizeTwo = fontSizeTwo ?? h.fontSizeTwo
     const gap = lineGap ?? h.lineGap
@@ -409,8 +422,6 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
         text: chunk,
       }
     })
-
-    const shadowChain = buildShadowChain(h.shadowDepth, h.shadowColor)
 
     // Per-line gradients in user space, pinned to each line's own letter
     // height so the gradient looks consistent across line counts.
@@ -510,15 +521,15 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
               height="900%"
             >
               <feGaussianBlur in="SourceAlpha" stdDeviation="16" result="b1" />
-              <feFlood floodColor="#FCF4D2" result="c1" />
+              <feFlood floodColor={haloColor} result="c1" />
               <feComposite in="c1" in2="b1" operator="in" result="g1" />
 
               <feGaussianBlur in="SourceAlpha" stdDeviation="30" result="b2" />
-              <feFlood floodColor="#FCF4D2" result="c2" />
+              <feFlood floodColor={haloColor} result="c2" />
               <feComposite in="c2" in2="b2" operator="in" result="g2" />
 
               <feGaussianBlur in="SourceAlpha" stdDeviation="80" result="b3" />
-              <feFlood floodColor="#FCF4D2" floodOpacity="0.91" result="c3" />
+              <feFlood floodColor={haloColor} floodOpacity="0.91" result="c3" />
               <feComposite in="c3" in2="b3" operator="in" result="g3" />
 
               <feMerge>
@@ -565,6 +576,7 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
                 <feMergeNode in="shadow" />
               </feMerge>
             </filter>
+
           </defs>
 
           <CurvedHeadline
@@ -572,13 +584,14 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
             gradientId={`${gradientIdBase}-1`}
             haloId={haloId}
             innerShadowId={innerShadowId}
+            shadowOffsets={shadowOffsets}
+            shadowColor={h.shadowColor}
             text={lineOne}
             fontSize={sizeOne}
             borderWidth={h.borderWidth}
             borderColor={h.borderColor}
             highlightWidth={h.highlightWidth}
             highlightColor={h.highlightColor}
-            shadowChain={shadowChain}
             letterSpacing={h.letterSpacing}
           />
           {lineTwoArcs.map((arc, i) => (
@@ -588,13 +601,14 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
               gradientId={`${gradientIdBase}-two-${i}`}
               haloId={haloId}
               innerShadowId={innerShadowId}
+              shadowOffsets={shadowOffsets}
+              shadowColor={h.shadowColor}
               text={arc.text}
               fontSize={sizeTwo}
               borderWidth={h.borderWidth}
               borderColor={h.borderColor}
               highlightWidth={h.highlightWidth}
               highlightColor={h.highlightColor}
-              shadowChain={shadowChain}
               letterSpacing={h.letterSpacing}
             />
           ))}
@@ -633,7 +647,7 @@ export const SocialsAsset = forwardRef<HTMLDivElement, SocialsAssetProps>(
           </div>
         )}
 
-        {tpl.showCredits && tpl.creditsByFormat && (
+        {tpl.showCredits && showCredits && tpl.creditsByFormat && (
           <Credits
             writerName={writerName}
             style={tpl.creditsByFormat[format]}
@@ -698,13 +712,14 @@ interface CurvedHeadlineProps {
   gradientId: string
   haloId: string
   innerShadowId: string
+  shadowOffsets: number[]
+  shadowColor: string
   text: string
   fontSize: number
   borderWidth: number
   borderColor: string
   highlightWidth: number
   highlightColor: string
-  shadowChain: string
   letterSpacing: number
 }
 
@@ -713,13 +728,14 @@ function CurvedHeadline({
   gradientId,
   haloId,
   innerShadowId,
+  shadowOffsets,
+  shadowColor,
   text,
   fontSize,
   borderWidth,
   borderColor,
   highlightWidth,
   highlightColor,
-  shadowChain,
   letterSpacing,
 }: CurvedHeadlineProps) {
   const sharedTextProps = {
@@ -750,7 +766,26 @@ function CurvedHeadline({
         {textPathNode}
       </text>
 
-      {/* Back layer — thick outer border + chunky 3D drop-shadow stack */}
+      {/* Shadow extrusion — offset copies of the stroked text shape, painted
+          in solid shadowColor. Largest offset first so smaller ones stack on
+          top, filling in the extrusion. No filters — works in all browsers. */}
+      {shadowOffsets.map((dy) => (
+        <text
+          key={`shadow-${dy}`}
+          {...sharedTextProps}
+          fill={shadowColor}
+          stroke={shadowColor}
+          strokeWidth={borderWidth}
+          strokeLinejoin="miter"
+          strokeMiterlimit={2}
+          paintOrder="stroke"
+          transform={`translate(0,${dy})`}
+        >
+          {textPathNode}
+        </text>
+      )).reverse()}
+
+      {/* Back layer — thick outer border */}
       <text
         {...sharedTextProps}
         fill={`url(#${gradientId})`}
@@ -759,7 +794,6 @@ function CurvedHeadline({
         strokeLinejoin="miter"
         strokeMiterlimit={2}
         paintOrder="stroke"
-        style={{ filter: shadowChain }}
       >
         {textPathNode}
       </text>

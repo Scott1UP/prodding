@@ -20,7 +20,7 @@ import {
   type TemplateKey,
 } from '@/components/ui/socials-asset'
 
-const TEMPLATE_ORDER: TemplateKey[] = ['standard', 'ecosystem']
+const TEMPLATE_ORDER: TemplateKey[] = ['standard', 'ticketing', 'ecosystem']
 
 const FORMAT_ORDER: FormatKey[] = ['landscape', 'portrait', 'vertical']
 
@@ -94,6 +94,7 @@ export default function SocialsDetail() {
     'Early Bird payment via ETH only',
   )
   const [showPill, setShowPill] = useState(true)
+  const [showCredits, setShowCredits] = useState(true)
   const [writerName, setWriterName] = useState('Candela')
 
   // Per-format style overrides
@@ -227,6 +228,7 @@ export default function SocialsDetail() {
     showLineTwo,
     pillText,
     showPill,
+    showCredits,
     writerName,
   }
 
@@ -457,7 +459,7 @@ export default function SocialsDetail() {
             />
           </FieldColumn>
 
-          {template === 'standard' ? (
+          {TEMPLATES[template].showPill ? (
             <FieldColumn>
               <FieldHeader htmlFor="socials-pill" label="Pill text">
                 <button
@@ -480,14 +482,23 @@ export default function SocialsDetail() {
             </FieldColumn>
           ) : (
             <FieldColumn>
-              <FieldHeader htmlFor="socials-writer" label="Writer name" />
+              <FieldHeader htmlFor="socials-writer" label="Credits">
+                <button
+                  type="button"
+                  onClick={() => setShowCredits((v) => !v)}
+                  className={`${accentCtaClass} hover:underline underline-offset-2`}
+                >
+                  {showCredits ? 'Hide' : 'Show'}
+                </button>
+              </FieldHeader>
               <input
                 id="socials-writer"
                 type="text"
                 value={writerName}
                 onChange={(e) => setWriterName(e.target.value)}
                 placeholder="Candela"
-                className="block h-9 w-full min-w-0 rounded-md border border-input bg-white shadow-xs px-3 py-1.5 text-base leading-6 outline-none transition-colors hover:border-text-tertiary focus-visible:border-input focus-visible:ring-0"
+                disabled={!showCredits}
+                className="block h-9 w-full min-w-0 rounded-md border border-input bg-white shadow-xs px-3 py-1.5 text-base leading-6 outline-none transition-colors hover:border-text-tertiary focus-visible:border-input focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </FieldColumn>
           )}
