@@ -62,6 +62,32 @@ interface StyleState {
   centerYOffset: number
 }
 
+// html-to-image's getFontEmbedCSS filters @font-face rules by fonts found via
+// HTML traversal — its `instanceof HTMLElement` recursion never descends into
+// SVG, so Chloe (set on the SVG <text> headline) is dropped from the embedded
+// CSS and exports fall back to Poppins. Inline it explicitly on the side.
+let chloeFontFaceCSSPromise: Promise<string> | null = null
+
+async function getChloeFontFaceCSS(): Promise<string> {
+  if (chloeFontFaceCSSPromise) return chloeFontFaceCSSPromise
+  chloeFontFaceCSSPromise = (async () => {
+    const res = await fetch('/fonts/Chloe-Regular.otf')
+    const blob = await res.blob()
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onerror = reject
+      reader.onloadend = () => resolve(reader.result as string)
+      reader.readAsDataURL(blob)
+    })
+    return (
+      '@font-face{font-family:"Chloe";' +
+      `src:url("${dataUrl}") format("opentype");` +
+      'font-weight:normal;font-style:normal;}'
+    )
+  })()
+  return chloeFontFaceCSSPromise
+}
+
 function defaultStyleFor(key: FormatKey): StyleState {
   const h = FORMATS[key].headline
   return {
@@ -162,7 +188,11 @@ export default function SocialsDetail() {
     const node = refByFormat[key].current
     if (!node) throw new Error(`Missing ref for format ${key}`)
     const cfg = FORMATS[key]
-    const fontEmbedCSS = await getFontEmbedCSS(node)
+    const [baseFontCSS, chloeFontCSS] = await Promise.all([
+      getFontEmbedCSS(node),
+      getChloeFontFaceCSS(),
+    ])
+    const fontEmbedCSS = `${chloeFontCSS}\n${baseFontCSS}`
     return toJpeg(node, {
       width: cfg.width,
       height: cfg.height,
@@ -178,7 +208,10 @@ export default function SocialsDetail() {
     if (selectedFormats.size === 0) return
     setDownloading(true)
     try {
-      await document.fonts.load(`800 32px "Poppins"`, pillText || ' ')
+      await Promise.all([
+        document.fonts.load(`normal 200px "Chloe"`, `${lineOne} ${lineTwo}`),
+        document.fonts.load(`800 32px "Poppins"`, pillText || ' '),
+      ])
       await document.fonts.ready
 
       const keys = FORMAT_ORDER.filter((k) => selectedFormats.has(k))
