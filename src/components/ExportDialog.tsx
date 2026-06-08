@@ -15,6 +15,11 @@ type ExportComponent = {
   label?: string
 }
 
+type ExportAsset = {
+  url: string
+  name: string
+}
+
 type ExportDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -27,8 +32,11 @@ type ExportDialogProps = {
   fontInstructions?: string
   fontDownloadUrl?: string
   fontFileName?: string
+  /** Single asset download (legacy) */
   assetDownloadUrl?: string
   assetDownloadName?: string
+  /** Multiple asset downloads — takes precedence over the single API */
+  assets?: ExportAsset[]
   setupNotes?: string
   setupNotesLabel?: string
 }
@@ -76,6 +84,7 @@ export function ExportDialog({
   fontFileName,
   assetDownloadUrl,
   assetDownloadName,
+  assets,
   setupNotes,
   setupNotesLabel = 'Additional Setup',
 }: ExportDialogProps) {
@@ -83,6 +92,13 @@ export function ExportDialog({
     components && components.length > 0
       ? components
       : [{ fileName, source: componentSource ?? '', label: 'Component' }]
+
+  const resolvedAssets: ExportAsset[] =
+    assets && assets.length > 0
+      ? assets
+      : assetDownloadUrl
+        ? [{ url: assetDownloadUrl, name: assetDownloadName ?? 'asset' }]
+        : []
 
   const tabValueFor = (c: ExportComponent, idx: number) => `component-${idx}-${c.fileName}`
   const defaultTab = tabValueFor(resolvedComponents[0], 0)
@@ -169,17 +185,22 @@ export function ExportDialog({
               </div>
             )}
 
-            {assetDownloadUrl && (
+            {resolvedAssets.length > 0 && (
               <div className="flex flex-col gap-2">
-                <span className="text-sm text-text-primary font-medium">Download Asset</span>
-                <a
-                  href={assetDownloadUrl}
-                  download={assetDownloadName}
-                  className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
-                >
-                  <Download size={14} strokeWidth={1.5} />
-                  {assetDownloadName}
-                </a>
+                <span className="text-sm text-text-primary font-medium">
+                  {resolvedAssets.length > 1 ? 'Download Assets' : 'Download Asset'}
+                </span>
+                {resolvedAssets.map((asset) => (
+                  <a
+                    key={asset.url}
+                    href={asset.url}
+                    download={asset.name}
+                    className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
+                  >
+                    <Download size={14} strokeWidth={1.5} />
+                    {asset.name}
+                  </a>
+                ))}
               </div>
             )}
           </TabsContent>

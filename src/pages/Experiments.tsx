@@ -23,6 +23,11 @@ const experiments = [
     name: 'Rotating Speakers',
     description: 'Speaker portraits orbiting in concentric elliptical rings with hover-pause and click-to-reveal.',
   },
+  {
+    slug: 'road-to-devcon-hero',
+    name: 'Road to Devcon Hero',
+    description: 'A layered hero with scroll-driven rotating rings and a mascot drifting along a figure-8 path.',
+  },
 ]
 
 export default function Experiments() {
@@ -122,6 +127,19 @@ export default function Experiments() {
                   src="/imgs/rotating-speakers-thumb.png"
                   alt=""
                   className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
+            {exp.slug === 'road-to-devcon-hero' && (
+              <div
+                className="h-48 flex items-center justify-center overflow-hidden border-b border-border-subtle relative bg-black bg-cover bg-center"
+                style={{ backgroundImage: 'url(/road-to-devcon/bg.jpg)' }}
+              >
+                <img
+                  src="/road-to-devcon/logo.webp"
+                  alt=""
+                  className="w-[55%] pointer-events-none"
                 />
               </div>
             )}
