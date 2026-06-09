@@ -8,18 +8,28 @@ import {
   useAnimationFrame,
   useReducedMotion,
 } from 'motion/react'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 const ASSET_BASE = '/road-to-devcon'
+
+// Two progressively-larger tiers below desktop. At ≤1024 the outer ring fills
+// the viewport and bleeds off the edges; at ≤600 it scales up further (outer
+// ring spilling slightly past the width is fine) for a full-screen feel where
+// the logo reads large. Being fully contained isn't useful on a tall, narrow
+// screen.
+const MOBILE_BREAKPOINT = 1024
+const SMALL_BREAKPOINT = 600
 
 // Concentric rings, ordered back-to-front. `factor` keeps the Art Director's
 // 3:2:1 rotation ratio (the middle ring counter-rotates). `spring` makes each
 // ring trail the scroll with momentum — near-critically damped (no bounce),
 // with the outer ring heaviest/slowest so the rings stagger instead of moving
-// in lockstep.
+// in lockstep. `mobileWidth`/`smallWidth` scale the whole set up while keeping
+// the rings' relative spacing identical.
 const RINGS = [
-  { src: `${ASSET_BASE}/l3.webp`, width: '81.5%', z: 1, factor: 0.05, spring: { stiffness: 60, damping: 20, mass: 1.4 } },
-  { src: `${ASSET_BASE}/l2.webp`, width: '71.25%', z: 2, factor: -0.1, spring: { stiffness: 75, damping: 20, mass: 1.2 } },
-  { src: `${ASSET_BASE}/l1.webp`, width: '52.4%', z: 3, factor: 0.15, spring: { stiffness: 90, damping: 20, mass: 1 } },
+  { src: `${ASSET_BASE}/l3.webp`, width: '81.5%', mobileWidth: '118%', smallWidth: '225%', z: 1, factor: 0.05, spring: { stiffness: 60, damping: 20, mass: 1.4 } },
+  { src: `${ASSET_BASE}/l2.webp`, width: '71.25%', mobileWidth: '103%', smallWidth: '196.5%', z: 2, factor: -0.1, spring: { stiffness: 75, damping: 20, mass: 1.2 } },
+  { src: `${ASSET_BASE}/l1.webp`, width: '52.4%', mobileWidth: '76%', smallWidth: '145.5%', z: 3, factor: 0.15, spring: { stiffness: 90, damping: 20, mass: 1 } },
 ] as const
 
 // Total scroll-driven rotation (deg) applied to a factor of 1.0 across the
@@ -35,9 +45,11 @@ export const HERO_BLEED = 200
 const DEVA_RADIUS = 25 // px
 const DEVA_SPEED = 0.24 // rad/sec (~26s per full cycle)
 
-function Ring({ progress, reduceMotion, src, width, z, factor, spring }: {
+function Ring({ progress, reduceMotion, isMobile, isSmall, src, width, mobileWidth, smallWidth, z, factor, spring }: {
   progress: ReturnType<typeof useScroll>['scrollYProgress']
   reduceMotion: boolean
+  isMobile: boolean
+  isSmall: boolean
 } & (typeof RINGS)[number]) {
   const target = useTransform(progress, [0, 1], [0, MAX_ROTATION * factor])
   const springRotate = useSpring(target, spring)
@@ -47,7 +59,7 @@ function Ring({ progress, reduceMotion, src, width, z, factor, spring }: {
       alt=""
       aria-hidden
       className="absolute left-1/2 top-1/2 max-w-none"
-      style={{ width, zIndex: z, x: '-50%', y: '-50%', rotate: reduceMotion ? target : springRotate }}
+      style={{ width: isSmall ? smallWidth : isMobile ? mobileWidth : width, zIndex: z, x: '-50%', y: '-50%', rotate: reduceMotion ? target : springRotate }}
     />
   )
 }
@@ -63,6 +75,13 @@ export function RoadToDevconHero({
 } = {}) {
   const ref = useRef<HTMLElement>(null)
   const reduceMotion = useReducedMotion()
+  const isMobile = useIsMobile(MOBILE_BREAKPOINT)
+  const isSmall = useIsMobile(SMALL_BREAKPOINT)
+
+  // On mobile the mascot is anchored inside a square whose width tracks the
+  // outer ring, so it stays placed relative to the rings at every tier.
+  const outerRing = RINGS[0]
+  const devaAnchorWidth = isSmall ? outerRing.smallWidth : outerRing.mobileWidth
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -105,15 +124,22 @@ export function RoadToDevconHero({
         {/* Foreground anchored to the hero box so the rings stay centered on
             the visible hero while bleeding below it. */}
         <div className="absolute inset-x-0 top-0" style={{ height }}>
-          {/* Mascot — wrapper handles centering, inner image handles the float */}
+          {/* Mascot. On desktop a fixed wrapper sits it above the rings. On
+              mobile it's anchored inside a centered, width-sized square so its
+              position scales with the (width-driven) rings instead of drifting
+              high on a tall viewport. Inner image handles the float either way. */}
           <div
-            className="absolute left-1/2 -translate-x-1/2 w-[19%] z-[5]"
-            style={{ top: 'calc(28% - 150px)' }}
+            className={
+              isMobile
+                ? 'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 aspect-square z-[5]'
+                : 'absolute left-1/2 -translate-x-1/2 w-[19%] z-[5]'
+            }
+            style={isMobile ? { width: devaAnchorWidth } : { top: 'calc(28% - 150px)' }}
           >
             <motion.img
               src={`${ASSET_BASE}/deva.webp`}
               alt="Deva"
-              className="w-full"
+              className={isMobile ? 'absolute left-1/2 top-[20%] -translate-x-1/2 w-[23%]' : 'w-full'}
               style={{ x: devaX, y: devaY }}
             />
           </div>
@@ -122,12 +148,12 @@ export function RoadToDevconHero({
           <img
             src={`${ASSET_BASE}/logo.webp`}
             alt="Road to Devcon"
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[40%] max-w-none z-[4]"
+            className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 max-w-none z-[4] ${isSmall ? 'w-[108%]' : isMobile ? 'w-[58%]' : 'w-[40%]'}`}
           />
 
           {/* Scroll-driven rotating rings */}
           {RINGS.map((ring) => (
-            <Ring key={ring.src} progress={scrollYProgress} reduceMotion={!!reduceMotion} {...ring} />
+            <Ring key={ring.src} progress={scrollYProgress} reduceMotion={!!reduceMotion} isMobile={isMobile} isSmall={isSmall} {...ring} />
           ))}
         </div>
       </div>

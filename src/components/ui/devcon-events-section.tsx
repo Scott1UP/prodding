@@ -97,7 +97,7 @@ export function DevconEventsSection() {
           </h2>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 max-[600px]:w-full max-[600px]:flex-col max-[600px]:items-start max-[600px]:gap-3">
           {/* Show past events toggle (static) */}
           <div className="flex items-center gap-2">
             <span className="relative inline-flex h-6 w-10 items-center rounded-full bg-[#dddae2] cursor-pointer">
@@ -107,7 +107,7 @@ export function DevconEventsSection() {
           </div>
 
           {/* Search (static) */}
-          <div className="flex h-10 w-[280px] items-center gap-2 rounded-lg border border-[#2211441a] bg-white px-3">
+          <div className="flex h-10 w-[280px] items-center gap-2 rounded-lg border border-[#2211441a] bg-white px-3 max-[600px]:w-full">
             <Search size={16} className="shrink-0 text-[#594d73]" strokeWidth={2} />
             <input
               type="text"

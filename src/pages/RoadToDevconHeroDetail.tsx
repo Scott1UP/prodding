@@ -14,6 +14,7 @@ import { DevconEventsSection } from '@/components/ui/devcon-events-section'
 import { ExportDialog } from '@/components/ExportDialog'
 import roadToDevconHeroSource from '@/components/ui/road-to-devcon-hero.tsx?raw'
 import devconAboutSectionSource from '@/components/ui/devcon-about-section.tsx?raw'
+import useIsMobileSource from '@/hooks/useIsMobile.ts?raw'
 
 function WebsitePreview({ onClose }: { onClose: () => void }) {
   const overlayRef = useRef<HTMLDivElement>(null)
@@ -124,6 +125,7 @@ export default function RoadToDevconHeroDetail() {
         components={[
           { fileName: 'road-to-devcon-hero.tsx', source: roadToDevconHeroSource, label: 'Hero' },
           { fileName: 'devcon-about-section.tsx', source: devconAboutSectionSource, label: 'About' },
+          { fileName: 'useIsMobile.ts', source: useIsMobileSource, label: 'useIsMobile' },
         ]}
         assets={[
           { url: '/road-to-devcon/bg.jpg', name: 'bg.jpg' },
